@@ -1,0 +1,14 @@
+[project]
+name = "hook-runner"
+version = "0"
+requires-python = ">3.12,<3.13"
+classifiers = ["Private :: Do Not Upload"]
+dependencies = [
+  "pydantic",
+  "PyYAML",
+]
+
+[tool.pip-tools]
+generate-hashes = true
+strip-extras = true
+upgrade = true
