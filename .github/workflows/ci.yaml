@@ -1,0 +1,41 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request: {}
+  workflow_dispatch: {}
+
+# https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#concurrency
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  COLUMNS: "120"
+  FORCE_COLOR: "1"
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  self-check:
+    name: Run hooks
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+        cache: pip
+        cache-dependency-path: .goose/**/manifest.json
+        check-latest: true
+    - name: Environment cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/goose
+        key: ${{ runner.os }}-goose-3.12-${{ hashFiles('.goose/**/manifest.json') }}
+        restore-keys: |
+          ${{ runner.os }}-goose-3.12
+          ${{ runner.os }}-goose
+    - run: python3 -m pip install -r requirements.txt
+    - run: time python -X dev -m goose run --select=all --delete-orphan-environments
+      env:
+        PYTHONPATH: src

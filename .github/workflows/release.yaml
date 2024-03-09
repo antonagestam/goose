@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-and-publish:
+    name: Build and publish
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/kio
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+          cache: pip
+          cache-dependency-path: pyproject.toml
+          check-latest: true
+      - name: Install dependencies
+        run: python3 -m pip install --upgrade build pkginfo
+      - name: Build
+        run: python3 -m build --sdist --wheel .
+      - name: Verify release version
+        run: |
+          pkg_info_version=$(
+          python3 <(cat << EOF
+          from pathlib import Path
+          from pkginfo import Wheel
+          wheel = Wheel(next(Path("dist").glob("*.whl")))
+          print(wheel.version)
+          EOF
+          )
+          )
+          if [[ "$pkg_info_version" != "${{ github.event.release.tag_name }}" ]]; then
+            echo "💥 The version of the built wheel doesn't match the release tag."
+            echo
+            echo "Release tag: '${{ github.event.release.tag_name }}'"
+            echo "Packaged version: '$pkg_info_version'"
+            exit 1
+          fi
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@release/v1
