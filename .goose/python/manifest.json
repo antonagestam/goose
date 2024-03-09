@@ -1,0 +1,1 @@
+{"source_dependencies":["pre-commit-hooks","ruff"],"lock_files":[{"path":"requirements.txt","checksum":"sha256:412a6739636f2dfb629ff50ed4405cc8df144fac987c104089b3f0a985ac53eb"}],"checksum":"sha256:c55533e128692357c8cc9e501647ac4ec541bb0580bbe1c704c06f2cd8525ca9"}

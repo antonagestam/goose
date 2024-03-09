@@ -1,0 +1,74 @@
+[project]
+name = "git-goose"
+authors = [
+  { name="Anton Agestam", email="git@antonagestam.se" },
+]
+description = "A picky and eager Git hook runner."
+license = {text = "BSD 3-Clause"}
+version = "0.0.1"
+requires-python = ">3.12,<3.13"
+classifiers = [
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3.12",
+  "Typing :: Typed",
+]
+dynamic = ["readme"]
+dependencies = [
+  "pydantic",
+  "PyYAML",
+  "nodeenv",
+  "identify",
+  "typer",
+  # https://typer.tiangolo.com/#optional-dependencies
+  "rich",
+  # https://typer.tiangolo.com/#optional-dependencies
+  "shellingham",
+]
+
+[project.urls]
+"Source Repository" = "https://github.com/antonagestam/goose"
+
+[build-system]
+requires = ["setuptools==70.3.0", "wheel==0.43.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+readme = {file = "README.md", content-type = "text/markdown; charset=UTF-8"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = false
+
+[tool.pip-tools]
+generate-hashes = true
+strip-extras = true
+upgrade = true
+
+[tool.mypy]
+python_version = 3.12
+show_error_codes = true
+pretty = true
+files = ["src", "tests"]
+plugins = ["pydantic.mypy"]
+
+ignore_missing_imports = false
+no_implicit_reexport = true
+no_implicit_optional = true
+strict_equality = true
+strict_optional = true
+check_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+disallow_untyped_calls = true
+disallow_untyped_decorators = true
+disallow_subclassing_any = true
+
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+warn_unreachable = true
