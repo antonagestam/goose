@@ -5,6 +5,8 @@ from .config import load_config
 from .environment import probe_orphans, build_environments, prepare_environment
 import asyncio
 
+from .paths import get_env_path
+
 
 @asyncio.run
 @lambda fn: fn()
@@ -14,8 +16,7 @@ async def main() -> None:
     lock_files_path = Path("./hr-locks")
     lock_files_path.mkdir(exist_ok=True)
 
-    env_dir = Path("./envs").resolve()
-    env_dir.mkdir(exist_ok=True)
+    env_dir = get_env_path()
 
     environments = build_environments(config, env_dir, lock_files_path)
 
