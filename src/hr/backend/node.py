@@ -17,10 +17,8 @@ from hr._utils.pydantic import BaseModel
 
 
 class PackageJson(BaseModel):
-    # name: str = "foo"
-    # version: str = "1.0.0"
-    lockfile_version: int = Field(default=1, serialization_alias="lockfileVersion")
-    dependencies: Mapping[str, str] = Field(serialization_alias="dependencies")
+    lockfile_version: int = Field(default=3, serialization_alias="lockfileVersion")
+    dependencies: Mapping[str, str]
 
 
 def _bootstrap_env() -> dict[str, str]:
@@ -97,7 +95,7 @@ async def freeze(
                 "install",
                 "--package-lock-only",
             ),
-            env=os.environ| {"PATH": f"{os.environ['PATH']}:{env_path / 'bin'}"},
+            env=os.environ | {"PATH": f"{os.environ['PATH']}:{env_path / 'bin'}"},
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )

@@ -1,0 +1,1 @@
+{"source_dependencies":["black","mypy"],"lock_files":[{"path":"requirements.txt","checksum":"sha256:12e3e6bdbb300e07f577a870ca5e7a74926b2aa108beb6ee03233e6a1056a42e"}],"checksum":"sha256:e02a8a2ace0861753395e20de40159cc05347fde9bcde0c0202866b1d261bdf7"}
