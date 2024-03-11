@@ -158,9 +158,6 @@ async def run(
     config: EnvironmentConfig,
     hook: HookConfig,
 ) -> RunResult:
-    """
-    PATH=envs/node/bin envs/node/bin/npx --prefix envs/node/ prettier
-    """
     process = await asyncio.create_subprocess_exec(
         env_path / "bin" / "npm",
         *(
