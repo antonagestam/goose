@@ -1,0 +1,62 @@
+# fixme: parallelism should be inferred!
+#   - hook config specifies whether it mutates or not
+#   - hook config specifies file types
+#   -> if two hooks have disjoint sets of types, they can be parallelized.
+#   -> this can be optimized, such that only the joint set of files is run in
+#      series.
+#
+#  [js1 a.js] [js1 b.js] [python1 a.py] [python1 b.py]
+#  [js2 a.js] [js2 b.js] [python1 a.py]
+#             [js2 b.js] [python2 a.py] [python2 b.py]
+#
+#  - allow constraints, like "before"/"after"/"serial"?
+version: 0
+environments:
+  - id: python312
+    ecosystem:
+      language: python
+      version: "3.12"
+    dependencies:
+      - black
+      - editorconfig-checker
+      - mypy
+
+  - id: python-sep
+    ecosystem:
+      language: python
+      version: "3.12"
+    dependencies:
+      - ruff
+
+  - id: node
+    ecosystem:
+      language: node
+      version: "21.7.1"
+    dependencies:
+      - prettier
+
+hooks:
+  - id: ruff
+    environment: python-sep
+    command: ruff
+    args: [check, --force-exclude, --fix]
+
+  - id: black
+    environment: python312
+    command: black
+    args: [--check, src]
+
+  - id: ec
+    environment: python312
+    command: ec
+
+  - id: prettier
+    environment: node
+    command: prettier
+    args:
+      - --write
+      - --ignore-unknown
+      - --parser=markdown
+      - --print-width=88
+      - --prose-wrap=always
+      - README.md

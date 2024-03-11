@@ -3,40 +3,21 @@ from typing import Literal, final, Self
 
 from pathlib import Path
 import yaml
-import enum
 
 from pydantic import model_validator
 from ._utils.pydantic import BaseModel
 
 
-class Parallelism(enum.Enum):
-    none = "none"
-    """
-    Hook will be run without distribution to multiple processes, and without
-    any other tasks running simultaneously.
-    """
-    distributed = "distributed"
-    """
-    Hook will not run simultaneously to other hooks, but will be distributed
-    across multiple processes.
-    """
-    independent = "independent"
-    """
-    Hook will run simultaneously to other hooks, and distributed across multiple
-    processes.
-    """
-
-
 @final
-class LanguageConfig(BaseModel):
-    id: Literal["python"]
+class EcosystemConfig(BaseModel):
+    language: Literal["python", "node"]
     version: str
 
 
 @final
 class EnvironmentConfig(BaseModel):
     id: str
-    language: LanguageConfig
+    ecosystem: EcosystemConfig
     dependencies: tuple[str, ...]
 
 
@@ -45,7 +26,7 @@ class HookConfig(BaseModel):
     id: str
     environment: str
     command: str
-    parallelism: Parallelism = Parallelism.none
+    args: tuple[str, ...] = ()
 
 
 @final
@@ -59,8 +40,7 @@ class Config(BaseModel):
         environments = {env.id for env in self.environments}
         for hook in self.hooks:
             if hook.environment not in environments:
-                raise ValueError(
-                    f"Unknown hook environment: {hook.environment!r}")
+                raise ValueError(f"Unknown hook environment: {hook.environment!r}")
         return self
 
 

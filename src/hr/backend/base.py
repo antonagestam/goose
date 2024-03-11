@@ -1,8 +1,11 @@
+import enum
 from pathlib import Path
 
-from hr.config import EnvironmentConfig
+from hr.config import EnvironmentConfig, HookConfig
 from dataclasses import dataclass
-from typing import final, Awaitable, Protocol, Sequence
+from typing import final, Awaitable, Protocol
+
+from hr.manifest import LockManifest
 
 
 class Bootstrap(Protocol):
@@ -11,8 +14,8 @@ class Bootstrap(Protocol):
         *,
         config: EnvironmentConfig,
         env_path: Path,
-    ) -> Awaitable[None]:
-        ...
+    ) -> Awaitable[None]: ...
+
 
 class Freeze(Protocol):
     def __call__(
@@ -21,8 +24,8 @@ class Freeze(Protocol):
         config: EnvironmentConfig,
         env_path: Path,
         lock_files_path: Path,
-    ) -> Awaitable[None]:
-        ...
+    ) -> Awaitable[None]: ...
+
 
 class Sync(Protocol):
     def __call__(
@@ -31,8 +34,12 @@ class Sync(Protocol):
         config: EnvironmentConfig,
         env_path: Path,
         lock_files_path: Path,
-    ) -> Awaitable[None]:
-        ...
+    ) -> Awaitable[LockManifest]: ...
+
+
+class RunResult(enum.Enum):
+    ok = enum.auto()
+    error = enum.auto()
 
 
 class Run(Protocol):
@@ -41,15 +48,14 @@ class Run(Protocol):
         *,
         config: EnvironmentConfig,
         env_path: Path,
-        command: Sequence[str],
-    ) -> Awaitable[None]:
-        ...
+        hook: HookConfig,
+    ) -> Awaitable[RunResult]: ...
 
 
 @final
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Backend:
-    language: str
+    ecosystem: str
     bootstrap: Bootstrap
     """
     - Create environment if it does not exist.
@@ -65,4 +71,3 @@ class Backend:
     - Uninstall obsolete dependencies.
     """
     run: Run
-

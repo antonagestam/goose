@@ -6,6 +6,7 @@ classifiers = ["Private :: Do Not Upload"]
 dependencies = [
   "pydantic",
   "PyYAML",
+  "nodeenv",
 ]
 
 [tool.pip-tools]

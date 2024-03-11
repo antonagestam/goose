@@ -7,5 +7,4 @@ class BaseModel(
     pydantic.BaseModel,
     frozen=True,
     extra=pydantic.Extra.forbid,
-):
-    ...
+): ...

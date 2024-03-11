@@ -3,16 +3,12 @@ import asyncio
 import asyncio.subprocess
 import sys
 from contextlib import ExitStack
-from functools import partial
 from pathlib import Path
-from typing import Final, Iterable, Sequence
-from .base import Backend
-from hr.config import EnvironmentConfig
-from hr.manifest import build_manifest
-
-
-def _system_python() -> Path:
-    return Path("python")
+from typing import Final, Iterable
+from .base import Backend, RunResult
+from hr.config import EnvironmentConfig, HookConfig
+from hr.manifest import build_manifest, write_manifest, LockManifest
+from ._process import stream_both, system_python
 
 
 def _venv_python(env_path: Path) -> Path:
@@ -35,24 +31,15 @@ def _run_env(env_path: Path) -> dict[str, str]:
 
 async def _create_virtualenv(env_path: Path) -> None:
     process = await asyncio.create_subprocess_exec(
-        _system_python(),
+        system_python(),
         *("-m", "venv", str(env_path)),
         env=_bootstrap_env(),
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
     )
-    await process.communicate()
+    await stream_both(process)
     if process.returncode != 0:
         raise RuntimeError("Failed creating virtualenv")
-
-
-async def _stream_out(
-    prefix: str,
-    stream: asyncio.StreamReader,
-) -> None:
-    while not stream.at_eof():
-        line = await stream.readline()
-        if not line:
-            continue
-        print(prefix, line.decode(), end="", file=sys.stderr)
 
 
 async def _pip_install(
@@ -66,9 +53,7 @@ async def _pip_install(
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    stream_stdout = asyncio.create_task(_stream_out("[stdout]", process.stdout))
-    stream_stderr = asyncio.create_task(_stream_out("[stderr]", process.stderr))
-    await asyncio.gather(stream_stdout, stream_stderr)
+    await stream_both(process)
     if process.returncode != 0:
         raise RuntimeError("Failed installing packages")
 
@@ -84,9 +69,7 @@ async def _pip_sync(
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    stream_stdout = asyncio.create_task(_stream_out("[stdout]", process.stdout))
-    stream_stderr = asyncio.create_task(_stream_out("[stderr]", process.stderr))
-    await asyncio.gather(stream_stdout, stream_stderr)
+    await stream_both(process)
     if process.returncode != 0:
         raise RuntimeError("Failed syncing dependencies")
 
@@ -95,9 +78,8 @@ async def bootstrap(
     env_path: Path,
     config: EnvironmentConfig,
 ) -> None:
-    if not env_path.exists():
-        print(f"Creating virtualenv {env_path.name}", file=sys.stderr)
-        await _create_virtualenv(env_path)
+    print(f"Creating virtualenv {env_path.name}", file=sys.stderr)
+    await _create_virtualenv(env_path)
 
     print("Installing pip-tools ...", file=sys.stderr)
     await _pip_install(env_path, ("pip-tools",))
@@ -114,7 +96,7 @@ async def freeze(
     requirements_txt = lock_files_path / "requirements.txt"
 
     with ExitStack() as stack:
-        stack.callback(partial(tmp_requirements_in.unlink, missing_ok=True))
+        stack.callback(tmp_requirements_in.unlink, missing_ok=True)
 
         # Write equivalent of a requirements.in.
         with tmp_requirements_in.open("w") as fd:
@@ -137,57 +119,63 @@ async def freeze(
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
-        stream_stdout = asyncio.create_task(_stream_out("[stdout]", process.stdout))
-        stream_stderr = asyncio.create_task(_stream_out("[stderr]", process.stderr))
-        await asyncio.gather(stream_stdout, stream_stderr)
+        await stream_both(process)
 
     if process.returncode != 0:
         raise RuntimeError("Failed freezing dependencies")
 
-    manifest_path = lock_files_path / "manifest.json"
     manifest = build_manifest(
         source_dependencies=config.dependencies,
         lock_files=(requirements_txt,),
         lock_files_path=lock_files_path,
     )
-    manifest_path.write_text(manifest.model_dump_json())
-    print(f"Wrote manifest to {manifest_path}", file=sys.stderr)
+    write_manifest(lock_files_path, manifest)
 
 
 async def sync(
     env_path: Path,
     config: EnvironmentConfig,
     lock_files_path: Path,
-) -> None:
+) -> LockManifest:
     requirements_txt = lock_files_path / "requirements.txt"
+    # fixme: should _read_ the manifest here!?? not create a new one??
+    manifest = build_manifest(
+        source_dependencies=config.dependencies,
+        lock_files=(requirements_txt,),
+        lock_files_path=lock_files_path,
+    )
 
-    print("Syncing dependencies", file=sys.stderr)
     await _pip_sync(
         env_path=env_path,
         requirements_txt=requirements_txt,
     )
 
+    return manifest
+
 
 async def run(
     env_path: Path,
     config: EnvironmentConfig,
-    command: Sequence[str],
-) -> None:
+    hook: HookConfig,
+) -> RunResult:
     process = await asyncio.create_subprocess_exec(
-        *command,
+        hook.command,
+        *hook.args,
         env=_run_env(env_path),
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    stream_stdout = asyncio.create_task(_stream_out("[stdout]", process.stdout))
-    stream_stderr = asyncio.create_task(_stream_out("[stderr]", process.stderr))
-    await asyncio.gather(stream_stdout, stream_stderr)
-    if process.returncode != 0:
-        raise RuntimeError("Failed running command")
+    await stream_both(process)
+
+    return (
+        RunResult.ok
+        if process.returncode == 0
+        else RunResult.error
+    )
 
 
 backend: Final = Backend(
-    language="python",
+    ecosystem="python",
     bootstrap=bootstrap,
     freeze=freeze,
     sync=sync,
