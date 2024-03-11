@@ -18,7 +18,6 @@ environments:
       version: "3.12"
     dependencies:
       - black
-      - editorconfig-checker
       - mypy
 
   - id: python-sep
@@ -39,16 +38,12 @@ hooks:
   - id: ruff
     environment: python-sep
     command: ruff
-    args: [check, --force-exclude, --fix]
+    args: [--force-exclude, --fix]
 
   - id: black
     environment: python312
     command: black
-    args: [--check, src]
-
-  - id: ec
-    environment: python312
-    command: ec
+    args: [src]
 
   - id: prettier
     environment: node

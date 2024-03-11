@@ -97,9 +97,7 @@ async def freeze(
                 "install",
                 "--package-lock-only",
             ),
-            env=os.environ | {
-                "PATH": f"{os.environ['PATH']}:{env_path / 'bin'}",
-            },
+            env=os.environ| {"PATH": f"{os.environ['PATH']}:{env_path / 'bin'}"},
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -143,9 +141,7 @@ async def sync(
                 "install",
                 "--no-save",
             ),
-            env=os.environ | {
-                "PATH": f"{os.environ['PATH']}:{env_path / 'bin'}",
-            },
+            env=os.environ | {"PATH": f"{os.environ['PATH']}:{env_path / 'bin'}"},
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -174,19 +170,13 @@ async def run(
             "--",
             *hook.args,
         ),
-        env=os.environ | {
-            "PATH": f"{os.environ['PATH']}:{env_path / 'bin'}",
-        },
+        env=os.environ | {"PATH": f"{os.environ['PATH']}:{env_path / 'bin'}"},
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
     await stream_both(process)
 
-    return (
-        RunResult.ok
-        if process.returncode == 0
-        else RunResult.error
-    )
+    return RunResult.ok if process.returncode == 0 else RunResult.error
 
 
 backend: Final = Backend(

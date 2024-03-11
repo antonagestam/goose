@@ -167,11 +167,7 @@ async def run(
     )
     await stream_both(process)
 
-    return (
-        RunResult.ok
-        if process.returncode == 0
-        else RunResult.error
-    )
+    return RunResult.ok if process.returncode == 0 else RunResult.error
 
 
 backend: Final = Backend(

@@ -8,7 +8,7 @@
 - [ ] Include patterns
 - [ ] Exclude patterns
 - [ ] Hook parallelism
-    - Within hook
-    - Across hooks
+  - Within hook
+  - Across hooks
 - [ ] Only changed files
 - [ ] Git hook installation
