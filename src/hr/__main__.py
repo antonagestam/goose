@@ -8,7 +8,7 @@ from .environment import (
 )
 import asyncio
 
-from .targets import get_targets
+from .targets import get_targets, Selector
 import typer
 from .asyncio import asyncio_entrypoint
 from typing import Annotated, TypeAlias, Final
@@ -50,11 +50,12 @@ async def upgrade(
 async def run(
     config_path: ConfigOption = default_config,
     delete_orphan_environments: bool = False,
+    select: Selector = typer.Option(default="diff"),
 ) -> None:
     ctx = gather_context(config_path)
 
     # Spawn file delta task to run in background.
-    get_targets_task = asyncio.create_task(get_targets(ctx.config))
+    get_targets_task = asyncio.create_task(get_targets(ctx.config, select))
 
     probe_orphan_environments(ctx, delete=delete_orphan_environments)
 

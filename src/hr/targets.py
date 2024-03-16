@@ -1,7 +1,8 @@
 import asyncio
 import asyncio.subprocess
+import enum
 from pathlib import Path
-from typing import AsyncIterator, Iterator
+from typing import AsyncIterator, Iterator, assert_never
 
 # todo: address liability
 from identify.identify import tags_from_filename
@@ -19,20 +20,34 @@ class Target:
     tags: frozenset[str]
 
 
-def split_git_path_line(paths: bytes) -> Iterator[Path]:
+def _split_git_path_line(paths: bytes) -> Iterator[Path]:
     for path in paths.strip().split(b"\x00"):
         if not path:
             continue
         yield Path(path.decode())
 
 
-async def _git_delta() -> AsyncIterator[Path]:
+class Selector(enum.Enum):
+    all = "all"
+    diff = "diff"
+
+
+async def _git_file_list(selector: Selector) -> AsyncIterator[Path]:
+    if selector is Selector.all:
+        command = ("git", "ls-files", "-z")
+    elif selector is Selector.diff:
+        command = (
+            "git",
+            "diff",
+            "--name-only",
+            "-z",
+            "HEAD",
+        )
+    else:
+        assert_never(selector)
+
     process = await asyncio.create_subprocess_exec(
-        "git",
-        "diff",
-        "--name-only",
-        "-z",
-        "HEAD",
+        *command,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
@@ -41,14 +56,14 @@ async def _git_delta() -> AsyncIterator[Path]:
         line = await process.stdout.readline()
         if not line:
             continue
-        for path in split_git_path_line(line):
+        for path in _split_git_path_line(line):
             yield path
     await stream_stderr
 
 
-async def get_targets(config: Config) -> tuple[Target, ...]:
+async def get_targets(config: Config, selector: Selector) -> tuple[Target, ...]:
     targets = []
-    async for path in _git_delta():
+    async for path in _git_file_list(selector):
         if path_matches_patterns(path, config.exclude):
             continue
         targets.append(
