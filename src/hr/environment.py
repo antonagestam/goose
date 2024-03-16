@@ -237,18 +237,24 @@ async def prepare_environment(environment: Environment) -> None:
         await environment.bootstrap()
         print(f"{log_prefix}Bootstrapping done.", file=sys.stderr)
     else:
-        print(f"{log_prefix}Found bootstrapped environment.", file=sys.stderr)
+        print(
+            f"{log_prefix}Found previously bootstrapped environment.",
+            file=sys.stderr,
+        )
 
     if environment.check_should_freeze():
         print(f"{log_prefix}Freezing dependencies ...", file=sys.stderr)
         await environment.freeze()
         print(f"{log_prefix}Freezing done.")
     else:
-        print(f"{log_prefix}Found lock files up-to-date.", file=sys.stderr)
+        print(f"{log_prefix}Found existing lock files up-to-date.", file=sys.stderr)
 
     if environment.check_should_sync():
         print(f"{log_prefix}Syncing dependencies ...", file=sys.stderr)
         await environment.sync()
         print(f"{log_prefix}Syncing done.", file=sys.stderr)
     else:
-        print(f"{log_prefix}Found dependencies up-to-date.", file=sys.stderr)
+        print(
+            f"{log_prefix}Found dependencies up-to-date.",
+            file=sys.stderr,
+        )
