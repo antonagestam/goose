@@ -7,6 +7,7 @@ dependencies = [
   "pydantic",
   "PyYAML",
   "nodeenv",
+  "identify",
 ]
 
 [tool.pip-tools]

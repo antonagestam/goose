@@ -109,7 +109,7 @@ def write_manifest(
     print(f"Wrote manifest to {manifest_path}", file=sys.stderr)
 
 
-def _read_manifest(lock_files_path: Path) -> LockManifest:
+def read_manifest(lock_files_path: Path) -> LockManifest:
     manifest_path = lock_files_path / "manifest.json"
     return LockManifest.model_validate_json(manifest_path.read_bytes())
 
@@ -127,7 +127,7 @@ def check_lock_files(
     state_checksum: str | None,
     config: EnvironmentConfig,
 ) -> LockFileState:
-    manifest = _read_manifest(lock_files_path)
+    manifest = read_manifest(lock_files_path)
 
     if set(config.dependencies) ^ set(manifest.source_dependencies):
         return LockFileState.config_manifest_mismatch

@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+from re import Pattern
 from typing import Literal, final, Self
 
 from pathlib import Path
@@ -27,6 +29,8 @@ class HookConfig(BaseModel):
     environment: str
     command: str
     args: tuple[str, ...] = ()
+    parameterize: bool = True
+    types: frozenset[str] = frozenset()
 
 
 @final
@@ -34,6 +38,7 @@ class Config(BaseModel):
     version: Literal[0]
     environments: tuple[EnvironmentConfig, ...]
     hooks: tuple[HookConfig, ...]
+    exclude: tuple[Pattern, ...] = ()
 
     @model_validator(mode="after")
     def validate_hook_environments_configured(self) -> Self:

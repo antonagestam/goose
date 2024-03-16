@@ -3,9 +3,7 @@ from pathlib import Path
 
 from hr.config import EnvironmentConfig, HookConfig
 from dataclasses import dataclass
-from typing import final, Awaitable, Protocol
-
-from hr.manifest import LockManifest
+from typing import final, Awaitable, Protocol, Iterable
 
 
 class Bootstrap(Protocol):
@@ -34,7 +32,7 @@ class Sync(Protocol):
         config: EnvironmentConfig,
         env_path: Path,
         lock_files_path: Path,
-    ) -> Awaitable[LockManifest]: ...
+    ) -> Awaitable[None]: ...
 
 
 class RunResult(enum.Enum):
@@ -49,6 +47,7 @@ class Run(Protocol):
         config: EnvironmentConfig,
         env_path: Path,
         hook: HookConfig,
+        target_files: Iterable[Path],
     ) -> Awaitable[RunResult]: ...
 
 

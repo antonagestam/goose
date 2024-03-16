@@ -1,1 +1,1 @@
-{"source_dependencies":["black","mypy"],"lock_files":[{"path":"requirements.txt","checksum":"sha256:12e3e6bdbb300e07f577a870ca5e7a74926b2aa108beb6ee03233e6a1056a42e"}],"checksum":"sha256:e02a8a2ace0861753395e20de40159cc05347fde9bcde0c0202866b1d261bdf7"}
+{"source_dependencies":["black","mypy"],"lock_files":[{"path":"requirements.txt","checksum":"sha256:c6caf6395fa6d99686a947b461dec2a8ce90a76541cd12fbae1464959a0a1747"}],"checksum":"sha256:84131623bdf521141a48f3d69de606b5ac71f30c25810ff708b88676f61827b9"}

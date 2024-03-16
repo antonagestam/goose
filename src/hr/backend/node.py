@@ -5,13 +5,13 @@ import contextlib
 import os
 import sys
 from pathlib import Path
-from typing import Final, Mapping, Iterator
+from typing import Final, Mapping, Iterator, Iterable
 
 from pydantic import Field
 
 from .base import Backend, RunResult
 from hr.config import EnvironmentConfig, HookConfig
-from hr.manifest import LockManifest, build_manifest, write_manifest
+from hr.manifest import build_manifest, write_manifest
 from ._process import stream_both, system_python
 from hr._utils.pydantic import BaseModel
 
@@ -120,14 +120,9 @@ async def sync(
     env_path: Path,
     config: EnvironmentConfig,
     lock_files_path: Path,
-) -> LockManifest:
+) -> None:
     package_lock_path = lock_files_path / "package-lock.json"
     package_json_path = lock_files_path / "package.json"
-    manifest = build_manifest(
-        source_dependencies=config.dependencies,
-        lock_files=(package_lock_path,),
-        lock_files_path=lock_files_path,
-    )
 
     shutil.copy(package_lock_path, env_path / package_lock_path.name)
     shutil.copy(package_json_path, env_path / package_json_path.name)
@@ -148,13 +143,12 @@ async def sync(
     if process.returncode != 0:
         raise RuntimeError("Failed syncing dependencies")
 
-    return manifest
-
 
 async def run(
     env_path: Path,
     config: EnvironmentConfig,
     hook: HookConfig,
+    target_files: Iterable[Path],
 ) -> RunResult:
     process = await asyncio.create_subprocess_exec(
         env_path / "bin" / "npm",
@@ -164,6 +158,7 @@ async def run(
             hook.command,
             "--",
             *hook.args,
+            *target_files,
         ),
         env=os.environ | {"PATH": f"{os.environ['PATH']}:{env_path / 'bin'}"},
         stdout=asyncio.subprocess.PIPE,

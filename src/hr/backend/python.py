@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Final, Iterable
 from .base import Backend, RunResult
 from hr.config import EnvironmentConfig, HookConfig
-from hr.manifest import build_manifest, write_manifest, LockManifest
+from hr.manifest import build_manifest, write_manifest
 from ._process import stream_both, system_python
 
 
@@ -136,31 +136,25 @@ async def sync(
     env_path: Path,
     config: EnvironmentConfig,
     lock_files_path: Path,
-) -> LockManifest:
+) -> None:
     requirements_txt = lock_files_path / "requirements.txt"
-    # fixme: should _read_ the manifest here!?? not create a new one??
-    manifest = build_manifest(
-        source_dependencies=config.dependencies,
-        lock_files=(requirements_txt,),
-        lock_files_path=lock_files_path,
-    )
 
     await _pip_sync(
         env_path=env_path,
         requirements_txt=requirements_txt,
     )
 
-    return manifest
-
 
 async def run(
     env_path: Path,
     config: EnvironmentConfig,
     hook: HookConfig,
+    target_files: Iterable[Path],
 ) -> RunResult:
     process = await asyncio.create_subprocess_exec(
         hook.command,
         *hook.args,
+        *target_files,
         env=_run_env(env_path),
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,

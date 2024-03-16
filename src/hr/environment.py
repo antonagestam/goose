@@ -3,14 +3,15 @@ import sys
 import shutil
 from pathlib import Path
 from types import MappingProxyType
-from typing import final, Final, Container, Mapping, assert_never
+from typing import final, Final, Container, Mapping, assert_never, Sequence
 
 from pydantic import RootModel
 
 from ._utils.pydantic import BaseModel
 from .backend.index import load_backend
 from .config import EnvironmentConfig, Config, HookConfig
-from .manifest import check_lock_files, LockFileState
+from .manifest import check_lock_files, LockFileState, read_manifest
+from .targets import Target
 
 
 def probe_orphans(
@@ -132,10 +133,16 @@ class Environment:
             case LockFileState.matching:
                 return False
             case LockFileState.missing_lock_file:
-                print("Expected lock file is missing", file=sys.stderr)
+                print(
+                    f"[{self.config.id}] Expected lock file is missing.",
+                    file=sys.stderr,
+                )
                 return True
             case LockFileState.state_manifest_mismatch:
-                print("Environment state does not match manifest", file=sys.stderr)
+                print(
+                    f"[{self.config.id}] Environment state does not match manifest.",
+                    file=sys.stderr,
+                )
                 return True
             case LockFileState.manifest_lock_file_mismatch:
                 raise RuntimeError(
@@ -164,7 +171,8 @@ class Environment:
         write_state(self._path, self.state)
 
     async def sync(self) -> None:
-        manifest = await self._backend.sync(
+        manifest = read_manifest(self.lock_files_path)
+        await self._backend.sync(
             env_path=self._path,
             config=self.config,
             lock_files_path=self.lock_files_path,
@@ -175,11 +183,27 @@ class Environment:
         )
         write_state(self._path, self.state)
 
-    async def run(self, hook: HookConfig) -> None:
+    async def run(
+        self,
+        hook: HookConfig,
+        targets: Sequence[Target],
+    ) -> None:
+        # Send empty sequence of files for non-parameterized hooks.
+        if not hook.parameterize:
+            target_files = ()
+        # Skip parameterized hooks when target file sequence is empty.
+        elif not targets:
+            print("No target files")
+            return
+
+        target_files = (target.path for target in targets if target.tags & hook.types)
+
+        # todo: this is where per-hook filtering would be implemented
         await self._backend.run(
             env_path=self._path,
             config=self.config,
             hook=hook,
+            target_files=target_files,
         )
 
 

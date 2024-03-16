@@ -11,6 +11,10 @@
 #
 #  - allow constraints, like "before"/"after"/"serial"?
 version: 0
+
+exclude:
+  - hr-locks/.*
+
 environments:
   - id: python312
     ecosystem:
@@ -38,20 +42,22 @@ hooks:
   - id: ruff
     environment: python-sep
     command: ruff
-    args: [--force-exclude, --fix]
+    args: [check, --force-exclude, --fix]
+    types: [python]
 
   - id: black
     environment: python312
     command: black
-    args: [src]
+    types: [python]
 
   - id: prettier
     environment: node
     command: prettier
+    parameterize: false
+    types: [markdown]
     args:
       - --write
       - --ignore-unknown
       - --parser=markdown
       - --print-width=88
       - --prose-wrap=always
-      - README.md
