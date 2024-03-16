@@ -10,6 +10,8 @@ from .backend._process import stream_out
 from .config import Config
 from dataclasses import dataclass
 
+from .filter import path_matches_patterns
+
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Target:
@@ -36,7 +38,7 @@ async def _git_delta() -> AsyncIterator[Path]:
 async def get_targets(config: Config) -> tuple[Target, ...]:
     targets = []
     async for path in _git_delta():
-        if any(pattern.fullmatch(str(path)) for pattern in config.exclude):
+        if path_matches_patterns(path, config.exclude):
             continue
         targets.append(
             Target(

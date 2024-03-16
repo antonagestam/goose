@@ -10,6 +10,7 @@ from pydantic import RootModel
 from ._utils.pydantic import BaseModel
 from .backend.index import load_backend
 from .config import EnvironmentConfig, Config, HookConfig
+from .filter import path_matches_patterns
 from .manifest import check_lock_files, LockFileState, read_manifest
 from .targets import Target
 
@@ -195,10 +196,14 @@ class Environment:
         elif not targets:
             print("No target files")
             return
+        else:
+            target_files = (
+                target.path
+                for target in targets
+                if target.tags & hook.types
+                if not path_matches_patterns(target.path, hook.exclude)
+            )
 
-        target_files = (target.path for target in targets if target.tags & hook.types)
-
-        # todo: this is where per-hook filtering would be implemented
         await self._backend.run(
             env_path=self._path,
             config=self.config,

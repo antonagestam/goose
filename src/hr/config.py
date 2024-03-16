@@ -31,6 +31,7 @@ class HookConfig(BaseModel):
     args: tuple[str, ...] = ()
     parameterize: bool = True
     types: frozenset[str] = frozenset()
+    exclude: tuple[Pattern, ...] = ()
 
 
 @final

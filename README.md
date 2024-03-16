@@ -5,10 +5,8 @@
 - [x] Pass filenames
 - [ ] Configurably do not pass filenames
 - [x] File types
-- [ ] Global include patterns
-- [ ] Global exclude patterns
-- [ ] Local include patterns
-- [ ] Local exclude patterns
+- [x] Global exclude patterns
+- [x] Hook level exclude patterns
 - [ ] Hook parallelism
   - Within hook
   - Across hooks

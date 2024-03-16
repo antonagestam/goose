@@ -13,7 +13,7 @@
 version: 0
 
 exclude:
-  - hr-locks/.*
+  - ^hr-locks/.*
 
 environments:
   - id: python312
