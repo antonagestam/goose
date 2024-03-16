@@ -1,1 +1,1 @@
-{"source_dependencies":["ruff"],"lock_files":[{"path":"requirements.txt","checksum":"sha256:8957b2e8799e12d423adacaf3d7b4e85aa7398b66d5450ba7063c8bb91dc3fe8"}],"checksum":"sha256:0068444373e594597bf53cc576514916c661d8689fee42e6ff5c6038ce6d6ead"}
+{"source_dependencies":["ruff"],"lock_files":[{"path":"requirements.txt","checksum":"sha256:2105a15a2b6f7df7ae664a57b8d5cd027be764ed26278c406b50577c83555f2f"}],"checksum":"sha256:cfc2b7f7eb847945d56ca0bdf72041311e6b5adc106f31fb14159b1c9018b677"}

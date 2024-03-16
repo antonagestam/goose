@@ -8,6 +8,11 @@ dependencies = [
   "PyYAML",
   "nodeenv",
   "identify",
+  "typer",
+  # https://typer.tiangolo.com/#optional-dependencies
+  "rich",
+  # https://typer.tiangolo.com/#optional-dependencies
+  "shellingham",
 ]
 
 [tool.pip-tools]

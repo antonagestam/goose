@@ -1,7 +1,7 @@
 import asyncio
 import asyncio.subprocess
 from pathlib import Path
-from typing import AsyncIterator
+from typing import AsyncIterator, Iterator
 
 # todo: address liability
 from identify.identify import tags_from_filename
@@ -23,6 +23,7 @@ async def _git_delta() -> AsyncIterator[Path]:
     process = await asyncio.create_subprocess_exec(
         "git",
         "ls-files",
+        "-z",
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )

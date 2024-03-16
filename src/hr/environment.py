@@ -15,7 +15,7 @@ from .manifest import check_lock_files, LockFileState, read_manifest
 from .targets import Target
 
 
-def probe_orphans(
+def probe_orphan_environments(
     environments: Container[str],
     env_dir: Path,
     delete: bool,
@@ -229,7 +229,10 @@ def build_environments(
     return MappingProxyType(environments)
 
 
-async def prepare_environment(environment: Environment) -> None:
+async def prepare_environment(
+    environment: Environment,
+    upgrade: bool = False,
+) -> None:
     log_prefix = f"[{environment.config.id}] "
 
     if environment.check_should_bootstrap():
@@ -242,7 +245,7 @@ async def prepare_environment(environment: Environment) -> None:
             file=sys.stderr,
         )
 
-    if environment.check_should_freeze():
+    if upgrade or environment.check_should_freeze():
         print(f"{log_prefix}Freezing dependencies ...", file=sys.stderr)
         await environment.freeze()
         print(f"{log_prefix}Freezing done.")
