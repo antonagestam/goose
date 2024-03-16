@@ -173,17 +173,18 @@ class Environment:
         # Send empty sequence of files for non-parameterized hooks.
         if not hook.parameterize:
             target_files = ()
-        # Skip parameterized hooks when target file sequence is empty.
-        elif not targets:
-            print("No target files")
-            return
         else:
-            target_files = (
+            target_files = tuple(
                 target.path
                 for target in targets
                 if target.tags & hook.types
                 if not path_matches_patterns(target.path, hook.exclude)
             )
+
+        # Skip parameterized hooks when resulting target file sequence is empty.
+        if hook.parameterize and not target_files:
+            print(f"[{hook.id}] Skipped.", file=sys.stderr)
+            return
 
         await self._backend.run(
             env_path=self._path,

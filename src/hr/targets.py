@@ -19,11 +19,20 @@ class Target:
     tags: frozenset[str]
 
 
+def split_git_path_line(paths: bytes) -> Iterator[Path]:
+    for path in paths.strip().split(b"\x00"):
+        if not path:
+            continue
+        yield Path(path.decode())
+
+
 async def _git_delta() -> AsyncIterator[Path]:
     process = await asyncio.create_subprocess_exec(
         "git",
-        "ls-files",
+        "diff",
+        "--name-only",
         "-z",
+        "HEAD",
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
@@ -32,7 +41,8 @@ async def _git_delta() -> AsyncIterator[Path]:
         line = await process.stdout.readline()
         if not line:
             continue
-        yield Path(line.strip().decode())
+        for path in split_git_path_line(line):
+            yield path
     await stream_stderr
 
 
