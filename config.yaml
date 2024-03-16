@@ -53,7 +53,6 @@ hooks:
   - id: prettier
     environment: node
     command: prettier
-    parameterize: false
     types: [markdown]
     args:
       - --write

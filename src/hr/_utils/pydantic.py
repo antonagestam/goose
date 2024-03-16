@@ -6,5 +6,5 @@ import pydantic
 class BaseModel(
     pydantic.BaseModel,
     frozen=True,
-    extra=pydantic.Extra.forbid,
+    extra="forbid",
 ): ...

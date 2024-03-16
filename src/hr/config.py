@@ -53,4 +53,4 @@ class Config(BaseModel):
 def load_config(path: Path) -> Config:
     with path.open("rb") as fd:
         loaded = yaml.safe_load(fd)
-    return Config.parse_obj(loaded)
+    return Config.model_validate(loaded)
