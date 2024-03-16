@@ -1,19 +1,18 @@
 import sys
 from pathlib import Path
 
-from .config import load_config
+from .context import gather_context
+from .orphan_environments import probe_orphan_environments
 from .environment import (
-    probe_orphan_environments,
-    build_environments,
     prepare_environment,
 )
 import asyncio
 
 from .targets import get_targets
-from .paths import get_env_path
 import typer
 from .asyncio import asyncio_entrypoint
 from typing import Annotated, TypeAlias, Final
+
 
 ConfigOption: TypeAlias = Annotated[
     Path,
@@ -36,15 +35,13 @@ cli = typer.Typer()
 async def upgrade(
     config_path: ConfigOption = default_config,
 ) -> None:
-    config = load_config(config_path)
-    lock_files_path = Path("./hr-locks")
-    lock_files_path.mkdir(exist_ok=True)
-    env_dir = get_env_path()
-    environments = build_environments(config, env_dir, lock_files_path)
-    await asyncio.gather(*[
-        asyncio.create_task(prepare_environment(environment, upgrade=True))
-        for environment in environments.values()
-    ])
+    ctx = gather_context(config_path)
+    await asyncio.gather(
+        *[
+            asyncio.create_task(prepare_environment(environment, upgrade=True))
+            for environment in ctx.environments.values()
+        ]
+    )
     print("All environments up-to-date", file=sys.stderr)
 
 
@@ -54,23 +51,16 @@ async def run(
     config_path: ConfigOption = default_config,
     delete_orphan_environments: bool = False,
 ) -> None:
-    config = load_config(config_path)
-
-    lock_files_path = Path("./hr-locks")
-    lock_files_path.mkdir(exist_ok=True)
+    ctx = gather_context(config_path)
 
     # Spawn file delta task to run in background.
-    get_targets_task = asyncio.create_task(get_targets(config))
+    get_targets_task = asyncio.create_task(get_targets(ctx.config))
 
-    env_dir = get_env_path()
-
-    environments = build_environments(config, env_dir, lock_files_path)
-
-    probe_orphan_environments(environments, env_dir, delete=delete_orphan_environments)
+    probe_orphan_environments(ctx, delete=delete_orphan_environments)
 
     prepare_tasks = [
         asyncio.create_task(prepare_environment(environment))
-        for environment in environments.values()
+        for environment in ctx.environments.values()
     ]
 
     # fixme: Should allow starting hooks before all environments are ready.
@@ -79,9 +69,9 @@ async def run(
 
     targets = await get_targets_task
 
-    for hook in config.hooks:
+    for hook in ctx.config.hooks:
         print(f"[{hook.environment}] [{hook.id}]", file=sys.stderr)
-        environment = environments[hook.environment]
+        environment = ctx.environments[hook.environment]
         await environment.run(hook, targets)
 
 

@@ -1,35 +1,16 @@
 import enum
 import sys
-import shutil
 from pathlib import Path
-from types import MappingProxyType
-from typing import final, Final, Container, Mapping, assert_never, Sequence
+from typing import final, Final, assert_never, Sequence, Mapping
 
 from pydantic import RootModel
 
 from ._utils.pydantic import BaseModel
 from .backend.index import load_backend
-from .config import EnvironmentConfig, Config, HookConfig
+from .config import EnvironmentConfig, Config, HookConfig, EnvironmentId
 from .filter import path_matches_patterns
 from .manifest import check_lock_files, LockFileState, read_manifest
 from .targets import Target
-
-
-def probe_orphan_environments(
-    environments: Container[str],
-    env_dir: Path,
-    delete: bool,
-) -> None:
-    for path in env_dir.glob("*"):
-        if not path.is_dir():
-            continue
-        if path.name in environments:
-            continue
-        if delete:
-            print(f"Deleting orphan environment {path.name!r}", file=sys.stderr)
-            shutil.rmtree(path)
-        else:
-            print(f"Warning: orphan environment {path.name!r}", file=sys.stderr)
 
 
 class InitialStage(enum.Enum):
@@ -216,7 +197,7 @@ def build_environments(
     config: Config,
     env_dir: Path,
     lock_files_path: Path,
-) -> Mapping[str, Environment]:
+) -> Mapping[EnvironmentId, Environment]:
     environments = {}
     for cfg in config.environments:
         path = env_dir / cfg.id
@@ -226,7 +207,7 @@ def build_environments(
             lock_files_path=lock_files_path,
             discovered_state=read_state(path),
         )
-    return MappingProxyType(environments)
+    return environments
 
 
 async def prepare_environment(

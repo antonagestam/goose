@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from re import Pattern
-from typing import Literal, final, Self
+from typing import Literal, final, Self, NewType
 
 from pathlib import Path
 import yaml
@@ -16,9 +16,12 @@ class EcosystemConfig(BaseModel):
     version: str
 
 
+EnvironmentId = NewType("EnvironmentId", str)
+
+
 @final
 class EnvironmentConfig(BaseModel):
-    id: str
+    id: EnvironmentId
     ecosystem: EcosystemConfig
     dependencies: tuple[str, ...]
 
@@ -26,7 +29,7 @@ class EnvironmentConfig(BaseModel):
 @final
 class HookConfig(BaseModel):
     id: str
-    environment: str
+    environment: EnvironmentId
     command: str
     args: tuple[str, ...] = ()
     parameterize: bool = True
