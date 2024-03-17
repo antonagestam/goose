@@ -42,7 +42,7 @@ async def _create_node_env(env_path: Path, version: str) -> None:
     )
     await stream_both(process)
     if process.returncode != 0:
-        raise RuntimeError("Failed creating virtualenv")
+        raise RuntimeError("Failed creating virtualenv {process.returncode=}")
 
 
 async def bootstrap(
@@ -102,7 +102,7 @@ async def freeze(
         await stream_both(process)
 
     if process.returncode != 0:
-        raise RuntimeError("Failed freezing dependencies")
+        raise RuntimeError("Failed freezing dependencies {process.returncode=}")
 
     package_lock_json_path = lock_files_path / "package-lock.json"
     manifest = build_manifest(
@@ -141,7 +141,7 @@ async def sync(
         await stream_both(process)
 
     if process.returncode != 0:
-        raise RuntimeError("Failed syncing dependencies")
+        raise RuntimeError("Failed syncing dependencies {process.returncode=}")
 
 
 async def run(

@@ -39,7 +39,7 @@ async def _create_virtualenv(env_path: Path) -> None:
     )
     await stream_both(process)
     if process.returncode != 0:
-        raise RuntimeError("Failed creating virtualenv")
+        raise RuntimeError("Failed creating virtualenv {process.returncode=}")
 
 
 async def _pip_install(
@@ -55,7 +55,7 @@ async def _pip_install(
     )
     await stream_both(process)
     if process.returncode != 0:
-        raise RuntimeError("Failed installing packages")
+        raise RuntimeError("Failed installing packages {process.returncode=}")
 
 
 async def _pip_sync(
@@ -71,7 +71,7 @@ async def _pip_sync(
     )
     await stream_both(process)
     if process.returncode != 0:
-        raise RuntimeError("Failed syncing dependencies")
+        raise RuntimeError("Failed syncing dependencies {process.returncode=}")
 
 
 async def bootstrap(
@@ -122,7 +122,7 @@ async def freeze(
         await stream_both(process)
 
     if process.returncode != 0:
-        raise RuntimeError("Failed freezing dependencies")
+        raise RuntimeError("Failed freezing dependencies {process.returncode=}")
 
     manifest = build_manifest(
         source_dependencies=config.dependencies,
