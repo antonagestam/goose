@@ -10,6 +10,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
+env:
+  COLUMNS: "120"
+  FORCE_COLOR: "1"
+  PYTHONUNBUFFERED: "1"
+
 jobs:
   self-check:
     name: Run hooks
@@ -36,3 +41,5 @@ jobs:
           ${{ runner.os }}-pre-commit
     - run: python3 -m pip install -r requirements.txt
     - run: time python -X dev -m hr run --select=all --delete-orphan-environments
+      env:
+        PYTHONPATH: src
