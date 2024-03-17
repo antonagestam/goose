@@ -38,6 +38,7 @@ async def _create_virtualenv(env_path: Path) -> None:
         stderr=asyncio.subprocess.PIPE,
     )
     await stream_both(process)
+    await process.wait()
     if process.returncode != 0:
         raise RuntimeError("Failed creating virtualenv {process.returncode=}")
 
@@ -54,6 +55,7 @@ async def _pip_install(
         stderr=asyncio.subprocess.PIPE,
     )
     await stream_both(process)
+    await process.wait()
     if process.returncode != 0:
         raise RuntimeError("Failed installing packages {process.returncode=}")
 
@@ -70,6 +72,7 @@ async def _pip_sync(
         stderr=asyncio.subprocess.PIPE,
     )
     await stream_both(process)
+    await process.wait()
     if process.returncode != 0:
         raise RuntimeError("Failed syncing dependencies {process.returncode=}")
 
@@ -120,6 +123,7 @@ async def freeze(
             stderr=asyncio.subprocess.PIPE,
         )
         await stream_both(process)
+        await process.wait()
 
     if process.returncode != 0:
         raise RuntimeError("Failed freezing dependencies {process.returncode=}")
@@ -160,6 +164,7 @@ async def run(
         stderr=asyncio.subprocess.PIPE,
     )
     await stream_both(process)
+    await process.wait()
 
     return RunResult.ok if process.returncode == 0 else RunResult.error
 

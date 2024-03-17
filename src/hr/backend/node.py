@@ -41,6 +41,7 @@ async def _create_node_env(env_path: Path, version: str) -> None:
         stderr=asyncio.subprocess.PIPE,
     )
     await stream_both(process)
+    await process.wait()
     if process.returncode != 0:
         raise RuntimeError("Failed creating virtualenv {process.returncode=}")
 
@@ -100,6 +101,7 @@ async def freeze(
             stderr=asyncio.subprocess.PIPE,
         )
         await stream_both(process)
+        await process.wait()
 
     if process.returncode != 0:
         raise RuntimeError("Failed freezing dependencies {process.returncode=}")
@@ -139,6 +141,7 @@ async def sync(
             stderr=asyncio.subprocess.PIPE,
         )
         await stream_both(process)
+        await process.wait()
 
     if process.returncode != 0:
         raise RuntimeError("Failed syncing dependencies {process.returncode=}")
@@ -165,6 +168,7 @@ async def run(
         stderr=asyncio.subprocess.PIPE,
     )
     await stream_both(process)
+    await process.wait()
 
     return RunResult.ok if process.returncode == 0 else RunResult.error
 

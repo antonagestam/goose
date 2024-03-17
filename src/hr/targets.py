@@ -59,6 +59,7 @@ async def _git_file_list(selector: Selector) -> AsyncIterator[Path]:
         for path in _split_git_path_line(line):
             yield path
     await stream_stderr
+    await process.wait()
 
 
 async def get_targets(config: Config, selector: Selector) -> tuple[Target, ...]:
