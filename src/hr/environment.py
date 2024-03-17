@@ -64,6 +64,9 @@ class Environment:
         # it. Each stage does some additional steps to verify we are in sync.
         self.state = discovered_state
 
+    def __repr__(self) -> str:
+        return f"Environment(id={self.config.id}, ecosystem={self._backend.ecosystem})"
+
     def check_should_bootstrap(self) -> bool:
         if self.state.stage is InitialStage.new:
             return True
