@@ -73,12 +73,6 @@ class Environment:
         return False
 
     def check_should_freeze(self) -> bool:
-        if (
-            self.state.stage is InitialStage.new
-            or self.state.stage is InitialStage.bootstrapped
-        ):
-            return True
-
         # Check if current lock files are up-to-date with dependencies
         # configured for the environment.
         match check_lock_files(
