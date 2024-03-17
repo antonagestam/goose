@@ -33,7 +33,7 @@ jobs:
         path: ~/.cache/genesis
         key: >-
           ${{ runner.os }}
-          -pre-commit
+          -genesis
           -3.12
           -${{ hashFiles('hr-locks/**/manifest.json') }}
         restore-keys: |
