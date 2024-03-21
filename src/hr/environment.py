@@ -1,16 +1,17 @@
+import asyncio
 import enum
 import sys
+from collections.abc import Set
 from pathlib import Path
-from typing import final, Final, assert_never, Sequence, Mapping
+from typing import final, Final, assert_never, Mapping
 
 from pydantic import RootModel
 
 from ._utils.pydantic import BaseModel
 from .backend.index import load_backend
 from .config import EnvironmentConfig, Config, HookConfig, EnvironmentId
-from .filter import path_matches_patterns
 from .manifest import check_lock_files, LockFileState, read_manifest
-from .targets import Target
+from .parallel import process_distribute
 
 
 class InitialStage(enum.Enum):
@@ -165,30 +166,27 @@ class Environment:
     async def run(
         self,
         hook: HookConfig,
-        targets: Sequence[Target],
+        target_files: Set[Path],
     ) -> None:
-        # Send empty sequence of files for non-parameterized hooks.
-        if not hook.parameterize:
-            target_files = ()
-        else:
-            target_files = tuple(
-                target.path
-                for target in targets
-                if target.tags & hook.types
-                if not path_matches_patterns(target.path, hook.exclude)
-            )
-
         # Skip parameterized hooks when resulting target file sequence is empty.
         if hook.parameterize and not target_files:
             print(f"[{hook.id}] Skipped.", file=sys.stderr)
             return
 
-        await self._backend.run(
-            env_path=self._path,
-            config=self.config,
-            hook=hook,
-            target_files=target_files,
+        run_tasks = tuple(
+            asyncio.create_task(
+                self._backend.run(
+                    env_path=self._path,
+                    config=self.config,
+                    hook=hook,
+                    target_files=chunk,
+                )
+            )
+            for chunk in process_distribute(hook, target_files)
         )
+
+        print(f"Spawned run task for {hook.id} over {len(run_tasks)} processes.")
+        await asyncio.gather(*run_tasks)
 
 
 def build_environments(

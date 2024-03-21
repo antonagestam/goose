@@ -35,6 +35,7 @@ class HookConfig(BaseModel):
     parameterize: bool = True
     types: frozenset[str] = frozenset()
     exclude: tuple[Pattern, ...] = ()
+    read_only: bool = False
 
 
 @final

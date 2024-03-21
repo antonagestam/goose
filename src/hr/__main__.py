@@ -1,14 +1,17 @@
 import sys
+from collections.abc import Set
 from pathlib import Path
 
-from .context import gather_context
+from .config import HookConfig
+from .parallel import all_targets, RunningHook
+from .context import gather_context, Context
 from .orphan_environments import probe_orphan_environments
 from .environment import (
     prepare_environment,
 )
 import asyncio
 
-from .targets import get_targets, Selector
+from .targets import get_targets, Selector, filter_hook_targets
 import typer
 from .asyncio import asyncio_entrypoint
 from typing import Annotated, TypeAlias, Final
@@ -45,6 +48,21 @@ async def upgrade(
     print("All environments up-to-date", file=sys.stderr)
 
 
+def spawn(
+    hook: HookConfig,
+    ctx: Context,
+    targets: Set[Path],
+) -> RunningHook:
+    print(f"[{hook.environment}] [{hook.id}]", file=sys.stderr)
+    environment = ctx.environments[hook.environment]
+    task = asyncio.create_task(environment.run(hook, targets))
+    return RunningHook(
+        config=hook,
+        task=task,
+        targets=targets,
+    )
+
+
 @cli.command()
 @asyncio_entrypoint
 async def run(
@@ -70,10 +88,54 @@ async def run(
 
     targets = await get_targets_task
 
-    for hook in ctx.config.hooks:
-        print(f"[{hook.environment}] [{hook.id}]", file=sys.stderr)
-        environment = ctx.environments[hook.environment]
-        await environment.run(hook, targets)
+    running_hooks = []
+    remaining_hooks = list(ctx.config.hooks)
+
+    while True:
+        for i, hook in enumerate(remaining_hooks):
+            hook_targets = filter_hook_targets(hook, targets)
+
+            # If no other task running, start.
+            if not running_hooks:
+                running_hooks.append(spawn(hook, ctx, hook_targets))
+                del remaining_hooks[i]
+                continue
+
+            # If running tasks have disjoint set of files vs current, start.
+            running_file_set = all_targets(running_hooks)
+            if not hook_targets & running_file_set:
+                running_hooks.append(spawn(hook, ctx, hook_targets))
+                del remaining_hooks[i]
+                continue
+
+            # If running tasks overlap with current, but neither mutates, start.
+            if hook.read_only and all(
+                running_hook.config for running_hook in running_hooks
+            ):
+                running_hooks.append(spawn(hook, ctx, hook_targets))
+                del remaining_hooks[i]
+                continue
+
+        if not remaining_hooks:
+            break
+
+        # Await first finished task.
+        await asyncio.wait(
+            (running_hook.task for running_hook in running_hooks),
+            return_when=asyncio.FIRST_COMPLETED,
+        )
+
+        # Filter completed tasks.
+        running_hooks = [
+            running_hook
+            for running_hook in running_hooks
+            if not running_hook.task.done()
+        ]
+
+    await asyncio.wait(
+        (running_hook.task for running_hook in running_hooks),
+        return_when=asyncio.ALL_COMPLETED,
+    )
 
 
 if __name__ == "__main__":

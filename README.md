@@ -13,3 +13,5 @@
 - [x] Only changed files
 - [x] Run on all files
 - [ ] Git hook installation
+- [ ] Run single hook
+- [ ] Exit 0 on fail ...

@@ -2,13 +2,13 @@ import asyncio
 import asyncio.subprocess
 import enum
 from pathlib import Path
-from typing import AsyncIterator, Iterator, assert_never
+from typing import AsyncIterator, Iterator, assert_never, Sequence
 
 # todo: address liability
 from identify.identify import tags_from_filename
 
 from .backend._process import stream_out
-from .config import Config
+from .config import Config, HookConfig
 from dataclasses import dataclass
 
 from .filter import path_matches_patterns
@@ -74,3 +74,19 @@ async def get_targets(config: Config, selector: Selector) -> tuple[Target, ...]:
             )
         )
     return tuple(targets)
+
+
+def filter_hook_targets(
+    hook: HookConfig,
+    targets: Sequence[Target],
+) -> frozenset[Path]:
+    # Send empty sequence of files for non-parameterized hooks.
+    if not hook.parameterize:
+        return frozenset()
+
+    return frozenset(
+        target.path
+        for target in targets
+        if (not hook.types or target.tags & hook.types)
+        if not path_matches_patterns(target.path, hook.exclude)
+    )

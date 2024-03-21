@@ -24,8 +24,9 @@ def _bootstrap_env() -> dict[str, str]:
 
 
 def _run_env(env_path: Path) -> dict[str, str]:
+    bin_path = env_path / "bin"
     return os.environ | {
-        "PATH": str(env_path / "bin"),
+        "PATH": f"{bin_path}:{os.environ['PATH']}",
     }
 
 
