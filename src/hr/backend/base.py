@@ -1,9 +1,11 @@
 import enum
 from pathlib import Path
 
-from hr.config import EnvironmentConfig, HookConfig
+from hr.config import EnvironmentConfig
 from dataclasses import dataclass
-from typing import final, Awaitable, Protocol, Iterable
+from typing import final, Awaitable, Protocol
+
+from hr.executable_unit import ExecutableUnit
 
 
 class Bootstrap(Protocol):
@@ -46,8 +48,7 @@ class Run(Protocol):
         *,
         config: EnvironmentConfig,
         env_path: Path,
-        hook: HookConfig,
-        target_files: Iterable[Path],
+        unit: ExecutableUnit,
     ) -> Awaitable[RunResult]: ...
 
 

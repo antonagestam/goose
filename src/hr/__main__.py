@@ -1,17 +1,13 @@
 import sys
-from collections.abc import Set
 from pathlib import Path
 
-from .config import HookConfig
-from .parallel import all_targets, RunningHook
-from .context import gather_context, Context
+from hr.scheduler import Scheduler, format_unit_state, exit_code
+from .context import gather_context
 from .orphan_environments import probe_orphan_environments
-from .environment import (
-    prepare_environment,
-)
+from .environment import prepare_environment
 import asyncio
 
-from .targets import get_targets, Selector, filter_hook_targets
+from .targets import get_targets, Selector
 import typer
 from .asyncio import asyncio_entrypoint
 from typing import Annotated, TypeAlias, Final
@@ -48,21 +44,6 @@ async def upgrade(
     print("All environments up-to-date", file=sys.stderr)
 
 
-def spawn(
-    hook: HookConfig,
-    ctx: Context,
-    targets: Set[Path],
-) -> RunningHook:
-    print(f"[{hook.environment}] [{hook.id}]", file=sys.stderr)
-    environment = ctx.environments[hook.environment]
-    task = asyncio.create_task(environment.run(hook, targets))
-    return RunningHook(
-        config=hook,
-        task=task,
-        targets=targets,
-    )
-
-
 @cli.command()
 @asyncio_entrypoint
 async def run(
@@ -86,56 +67,18 @@ async def run(
     await asyncio.gather(*prepare_tasks)
     print("All environments ready", file=sys.stderr)
 
-    targets = await get_targets_task
+    scheduler = Scheduler(ctx, await get_targets_task)
 
-    running_hooks = []
-    remaining_hooks = list(ctx.config.hooks)
+    async for _ in scheduler.until_complete():
+        print("---")
+        for hook, hook_units in scheduler.state().items():
+            print(f"{hook.id}\t: ", end="", file=sys.stderr)
+            for unit, unit_state in hook_units.items():
+                formatted = format_unit_state(unit_state)
+                print(f"{formatted} ", end="", file=sys.stderr)
+            print("", file=sys.stderr)
 
-    while True:
-        for i, hook in enumerate(remaining_hooks):
-            hook_targets = filter_hook_targets(hook, targets)
-
-            # If no other task running, start.
-            if not running_hooks:
-                running_hooks.append(spawn(hook, ctx, hook_targets))
-                del remaining_hooks[i]
-                continue
-
-            # If running tasks have disjoint set of files vs current, start.
-            running_file_set = all_targets(running_hooks)
-            if not hook_targets & running_file_set:
-                running_hooks.append(spawn(hook, ctx, hook_targets))
-                del remaining_hooks[i]
-                continue
-
-            # If running tasks overlap with current, but neither mutates, start.
-            if hook.read_only and all(
-                running_hook.config for running_hook in running_hooks
-            ):
-                running_hooks.append(spawn(hook, ctx, hook_targets))
-                del remaining_hooks[i]
-                continue
-
-        if not remaining_hooks:
-            break
-
-        # Await first finished task.
-        await asyncio.wait(
-            (running_hook.task for running_hook in running_hooks),
-            return_when=asyncio.FIRST_COMPLETED,
-        )
-
-        # Filter completed tasks.
-        running_hooks = [
-            running_hook
-            for running_hook in running_hooks
-            if not running_hook.task.done()
-        ]
-
-    await asyncio.wait(
-        (running_hook.task for running_hook in running_hooks),
-        return_when=asyncio.ALL_COMPLETED,
-    )
+    sys.exit(exit_code(scheduler.state()))
 
 
 if __name__ == "__main__":

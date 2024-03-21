@@ -7,11 +7,11 @@
 - [x] File types
 - [x] Global exclude patterns
 - [x] Hook level exclude patterns
-- [ ] Hook parallelism
+- [x] Hook parallelism
   - Within hook
   - Across hooks
 - [x] Only changed files
 - [x] Run on all files
 - [ ] Git hook installation
 - [ ] Run single hook
-- [ ] Exit 0 on fail ...
+- [x] Exit 0 on fail ...

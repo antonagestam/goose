@@ -1,15 +1,3 @@
-# fixme: parallelism should be inferred!
-#   - hook config specifies whether it mutates or not
-#   - hook config specifies file types
-#   -> if two hooks have disjoint sets of types, they can be parallelized.
-#   -> this can be optimized, such that only the joint set of files is run in
-#      series.
-#
-#  [js1 a.js] [js1 b.js] [python1 a.py] [python1 b.py]
-#  [js2 a.js] [js2 b.js] [python1 a.py]
-#             [js2 b.js] [python2 a.py] [python2 b.py]
-#
-#  - allow constraints, like "before"/"after"/"serial"?
 version: 0
 
 exclude:

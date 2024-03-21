@@ -5,15 +5,16 @@ import contextlib
 import os
 import sys
 from pathlib import Path
-from typing import Final, Mapping, Iterator, Iterable
+from typing import Final, Mapping, Iterator
 
 from pydantic import Field
 
 from .base import Backend, RunResult
-from hr.config import EnvironmentConfig, HookConfig
+from hr.config import EnvironmentConfig
 from hr.manifest import build_manifest, write_manifest
 from ._process import stream_both, system_python
 from hr._utils.pydantic import BaseModel
+from hr.executable_unit import ExecutableUnit
 
 
 class PackageJson(BaseModel):
@@ -150,18 +151,17 @@ async def sync(
 async def run(
     env_path: Path,
     config: EnvironmentConfig,
-    hook: HookConfig,
-    target_files: Iterable[Path],
+    unit: ExecutableUnit,
 ) -> RunResult:
     process = await asyncio.create_subprocess_exec(
         env_path / "bin" / "npm",
         *(
             "exec",
             f"--prefix={env_path}",
-            hook.command,
+            unit.hook.command,
             "--",
-            *hook.args,
-            *target_files,
+            *unit.hook.args,
+            *unit.targets,
         ),
         env=os.environ | {"PATH": f"{os.environ['PATH']}:{env_path / 'bin'}"},
         stdout=asyncio.subprocess.PIPE,

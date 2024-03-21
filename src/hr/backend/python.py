@@ -6,9 +6,10 @@ from contextlib import ExitStack
 from pathlib import Path
 from typing import Final, Iterable
 from .base import Backend, RunResult
-from hr.config import EnvironmentConfig, HookConfig
+from hr.config import EnvironmentConfig
 from hr.manifest import build_manifest, write_manifest
 from ._process import stream_both, system_python
+from hr.executable_unit import ExecutableUnit
 
 
 def _venv_python(env_path: Path) -> Path:
@@ -153,13 +154,12 @@ async def sync(
 async def run(
     env_path: Path,
     config: EnvironmentConfig,
-    hook: HookConfig,
-    target_files: Iterable[Path],
+    unit: ExecutableUnit,
 ) -> RunResult:
     process = await asyncio.create_subprocess_exec(
-        hook.command,
-        *hook.args,
-        *target_files,
+        unit.hook.command,
+        *unit.hook.args,
+        *unit.targets,
         env=_run_env(env_path),
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,

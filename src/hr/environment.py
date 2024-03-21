@@ -1,17 +1,17 @@
 import asyncio
 import enum
 import sys
-from collections.abc import Set
 from pathlib import Path
 from typing import final, Final, assert_never, Mapping
 
 from pydantic import RootModel
 
 from ._utils.pydantic import BaseModel
+from .backend.base import RunResult
 from .backend.index import load_backend
-from .config import EnvironmentConfig, Config, HookConfig, EnvironmentId
+from .config import EnvironmentConfig, Config, EnvironmentId
 from .manifest import check_lock_files, LockFileState, read_manifest
-from .parallel import process_distribute
+from .parallel import ExecutableUnit
 
 
 class InitialStage(enum.Enum):
@@ -163,30 +163,14 @@ class Environment:
         )
         write_state(self._path, self.state)
 
-    async def run(
-        self,
-        hook: HookConfig,
-        target_files: Set[Path],
-    ) -> None:
-        # Skip parameterized hooks when resulting target file sequence is empty.
-        if hook.parameterize and not target_files:
-            print(f"[{hook.id}] Skipped.", file=sys.stderr)
-            return
-
-        run_tasks = tuple(
-            asyncio.create_task(
-                self._backend.run(
-                    env_path=self._path,
-                    config=self.config,
-                    hook=hook,
-                    target_files=chunk,
-                )
+    def run(self, unit: ExecutableUnit) -> asyncio.Task[RunResult]:
+        return asyncio.create_task(
+            self._backend.run(
+                env_path=self._path,
+                config=self.config,
+                unit=unit,
             )
-            for chunk in process_distribute(hook, target_files)
         )
-
-        print(f"Spawned run task for {hook.id} over {len(run_tasks)} processes.")
-        await asyncio.gather(*run_tasks)
 
 
 def build_environments(
