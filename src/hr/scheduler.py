@@ -149,8 +149,12 @@ def format_unit_state(
 
 
 def exit_code(state: SchedulerState) -> int:
-    for units in state.values():
-        for unit_state in units.values():
-            if unit_state is RunResult.error:
-                return 1
-    return 0
+    return (
+        1
+        if any(
+            unit_state is RunResult.error
+            for units in state.values()
+            for unit_state in units.values()
+        )
+        else 0
+    )
