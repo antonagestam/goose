@@ -1,6 +1,12 @@
 # goose 🦆
 
-#### Todo
+### Features
+
+- Smart parallelism schedules hooks across CPUs while avoiding concurrent writes.
+- Deterministic environments by using ecosystem-specific lock files.
+- Share environments across hooks.
+
+### Todo
 
 - [x] Pass filenames
 - [x] Configurably do not pass filenames
