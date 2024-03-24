@@ -66,7 +66,7 @@ class Scheduler:
 
             # If running tasks have disjoint set of files vs current, start.
             running_file_set = frozenset(
-                chain(*(unit.targets for unit in self._running_units.keys()))
+                chain(*(unit.targets for unit in self._running_units))
             )
             if not unit.targets & running_file_set:
                 self._schedule_unit(unit)
@@ -75,7 +75,7 @@ class Scheduler:
 
             # If running tasks overlap with current, but neither mutates, start.
             if unit.hook.read_only and all(
-                other_unit.hook.read_only for other_unit in self._running_units.keys()
+                other_unit.hook.read_only for other_unit in self._running_units
             ):
                 self._schedule_unit(unit)
                 yield
@@ -87,7 +87,7 @@ class Scheduler:
             if not task.done():
                 continue
             self._results[unit] = task.result()
-        for unit in self._results.keys():
+        for unit in self._results:
             try:
                 del self._running_units[unit]
             except KeyError:
