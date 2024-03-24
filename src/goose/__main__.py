@@ -55,13 +55,13 @@ def format_unit_state(
 ) -> Text | Table:
     match state:
         case None:
-            return Text("[W]")
+            return Text("[ ]", style="dim")
         case asyncio.Task():
             return spinner
         case RunResult.ok:
-            return Text("[D]", style="green")
+            return Text("[✓]", style="green")
         case RunResult.error:
-            return Text("[E]", style="red")
+            return Text("[✗]", style="red")
         case no_match:
             assert_never(no_match)
 
