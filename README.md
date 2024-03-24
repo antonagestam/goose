@@ -7,19 +7,31 @@
 - Smart parallelism schedules hooks across CPUs while avoiding concurrent writes.
 - Deterministic environments by using ecosystem-specific lock files.
 - Share environments across hooks.
-- Self-contained hook definitions makes sure there's no need to push tool-specific configuration upstream, or to create elaborate repository mirroring schemes.
+- Self-contained hook definitions makes sure there's no need to push tool-specific
+  configuration upstream, or to create elaborate repository mirroring schemes.
 
 ### Parallelism
 
-Goose takes care to keep your CPUs as busy as possible, optimizing to have the full suite of hooks finish as soon as possible. It does this by distributing units of work to all available processing cores.
+Goose takes care to keep your CPUs as busy as possible, optimizing to have the full
+suite of hooks finish as soon as possible. It does this by distributing units of work to
+all available processing cores.
 
-Parameterized hooks, or hooks that take files as command line arguments, are divided to one unit of work per available core. Whenever a core becomes available for more work, a new unit is chosen for execution.
+Parameterized hooks, or hooks that take files as command line arguments, are divided to
+one unit of work per available core. Whenever a core becomes available for more work, a
+new unit is chosen for execution.
 
-The scheduler takes care to never run more than one mutating hook on the same file. It does this by taking into account hooks marked as `read_only` and by comparing sets of files a unit of work is assigned to. Two incompatible hooks can be simultaneously working on two separate parts of the code-base.
+The scheduler takes care to never run more than one mutating hook on the same file. It
+does this by taking into account hooks marked as `read_only` and by comparing sets of
+files a unit of work is assigned to. Two incompatible hooks can be simultaneously
+working on two separate parts of the code-base.
 
 ### Deterministic environments
 
-Goose uses lock files to facilitate deterministic results across developer environments and CI. You specify dependencies in `goose.yaml`, and invoking `goose run` will produce the appropriate lock files under a `.goose/` directory. The `.goose/` directory is meant to be checked into git, so that future invocations of `goose run` can use the lock files it contains to produce identical environments for hooks to run in.
+Goose uses lock files to facilitate deterministic results across developer environments
+and CI. You specify dependencies in `goose.yaml`, and invoking `goose run` will produce
+the appropriate lock files under a `.goose/` directory. The `.goose/` directory is meant
+to be checked into git, so that future invocations of `goose run` can use the lock files
+it contains to produce identical environments for hooks to run in.
 
 ## Usage
 
@@ -68,7 +80,9 @@ $ git commit -m 'Add goose configuration'
 
 ### Upgrading hook versions
 
-As pinning of hook versions is handled with lock files, there's no need to change configuration to upgrade hook dependency versions, instead you just run the upgrade command.
+As pinning of hook versions is handled with lock files, there's no need to change
+configuration to upgrade hook dependency versions, instead you just run the upgrade
+command.
 
 ```sh
 $ python -m goose upgrade
