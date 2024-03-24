@@ -12,9 +12,9 @@
 
 Goose takes care to keep your CPUs as busy as possible. It does this by distributing units of work to all processing cores. 
 
-Parameterized hooks, or hooks that take files as command line arguments, are divided to one unit of work per available core. Whenever a core becomes available for more work, a unit is scheduled.
+Parameterized hooks, or hooks that take files as command line arguments, are divided to one unit of work per available core. Whenever a core becomes available for more work, a new unit is chosen for execution.
 
-The scheduler takes care to never run more than one mutating hook on the same file.
+The scheduler takes care to never run more than one mutating hook on the same file. It does this by taking into account hooks marked as `read_only` and by comparing sets of files a unit of work is assigned to. Two incompatible hooks can be simultaneously working on two separate parts of the code-base.
 
 ### Todo
 
