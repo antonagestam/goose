@@ -90,6 +90,127 @@ $ git add .goose
 $ git commit -m 'Bump goose dependencies'
 ```
 
+### Example node hook
+
+Goose currently supports Python and Node environments, here's an example using [Prettier]
+to format Markdown files.
+
+[Prettier]: https://prettier.io/
+
+```yaml
+version: 0
+
+exclude:
+  - ^\.goose/.*
+
+environments:
+  - id: node
+    ecosystem:
+      language: node
+      version: "21.7.1"
+    dependencies:
+      - prettier
+
+hooks:
+  - id: prettier
+    environment: node
+    command: prettier
+    types: [markdown]
+    args:
+      - --write
+      - --ignore-unknown
+      - --parser=markdown
+      - --print-width=88
+      - --prose-wrap=always
+```
+
+### Read-only hooks
+
+You will likely want to use a mix of pure linters, as well as formatters and
+auto-fixers. Tools that don't mutate files can be more heavily parallelized by Goose,
+because they can inspect overlapping sets of files simultaneously as other tools. To
+enable this you set `read_only: true` in hook configuration.
+
+```yaml
+version: 0
+
+exclude:
+  - ^\.goose/.*
+
+environments:
+  - id: python
+    ecosystem:
+      language: python
+      version: "3.12"
+    dependencies:
+      - pre-commit-hooks
+
+hooks:
+  - id: check-case-conflict
+    environment: python
+    command: check-case-conflict
+    read_only: true
+
+  - id: check-merge-conflict
+    environment: python
+    command: check-merge-conflict
+    read_only: true
+    types: [text]
+
+  - id: python-debug-statements
+    environment: python
+    command: debug-statement-hook
+    read_only: true
+    types: [python]
+
+  - id: detect-private-key
+    environment: python
+    command: detect-private-key
+    read_only: true
+    types: [text]
+
+  - id: end-of-file-fixer
+    environment: python
+    command: end-of-file-fixer
+    types: [text]
+
+  - id: trailing-whitespace-fixer
+    environment: python
+    command: trailing-whitespace-fixer
+    types: [text]
+```
+
+Hooks that do not specify `read_only: true` will never run simultaneously as other tools
+over the same file.
+
+### Non-parameterized hooks
+
+Some tools don't support passing files, or just work better if given the responsibility
+to parallelize work itself. One such tool is mypy. You can instruct goose to not pass filenames
+to a hook (and as a consequence, also not spawn multiple parallel jobs for this hook).
+
+```yaml
+version: 0
+
+exclude:
+  - ^\.goose/.*
+
+environments:
+  - id: mypy
+    ecosystem:
+      language: python
+      version: "3.12"
+    dependencies:
+      - mypy
+
+hooks:
+  - id: mypy
+    environment: mypy
+    command: mypy
+    read_only: true
+    parameterize: false
+```
+
 ### Todo
 
 - [x] Pass filenames
