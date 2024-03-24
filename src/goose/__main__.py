@@ -6,7 +6,7 @@ from rich.text import Text
 
 from pathlib import Path
 
-from hr.backend.base import RunResult
+from goose.backend.base import RunResult
 from .scheduler import Scheduler, exit_code
 from .context import gather_context
 from .orphan_environments import probe_orphan_environments

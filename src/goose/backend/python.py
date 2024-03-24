@@ -6,10 +6,10 @@ from contextlib import ExitStack
 from pathlib import Path
 from typing import Final, Iterable
 from .base import Backend, RunResult
-from hr.config import EnvironmentConfig
-from hr.manifest import build_manifest, write_manifest
+from goose.config import EnvironmentConfig
+from goose.manifest import build_manifest, write_manifest
 from ._process import stream_both, system_python
-from hr.executable_unit import ExecutableUnit
+from goose.executable_unit import ExecutableUnit
 
 
 def _venv_python(env_path: Path) -> Path:

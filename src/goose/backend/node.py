@@ -10,11 +10,11 @@ from typing import Final, Mapping, Iterator, Sequence
 from pydantic import Field
 
 from .base import Backend, RunResult
-from hr.config import EnvironmentConfig
-from hr.manifest import build_manifest, write_manifest
+from goose.config import EnvironmentConfig
+from goose.manifest import build_manifest, write_manifest
 from ._process import stream_both, system_python
-from hr._utils.pydantic import BaseModel
-from hr.executable_unit import ExecutableUnit
+from goose._utils.pydantic import BaseModel
+from goose.executable_unit import ExecutableUnit
 
 
 class PackageJson(BaseModel):

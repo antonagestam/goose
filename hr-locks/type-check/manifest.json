@@ -1,1 +1,0 @@
-{"source_dependencies":["identify==2.5.35","mypy","pydantic==2.6.4","rich==13.7.1","typer==0.9.0","types-pyyaml==6.0.12.20240311"],"lock_files":[{"path":"requirements.txt","checksum":"sha256:ea7fa86ced7363e1b06b0ef21a1290cdddc1d31bcf5d569a12d02d77c351808c"}],"checksum":"sha256:24f98352a63edf63f1482b5ed662617ec8ef5ade5bbe4995e095b407ffd6f2e4"}

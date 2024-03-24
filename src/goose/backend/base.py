@@ -1,11 +1,11 @@
 import enum
 from pathlib import Path
 
-from hr.config import EnvironmentConfig
+from goose.config import EnvironmentConfig
 from dataclasses import dataclass
 from typing import final, Awaitable, Protocol, Coroutine
 
-from hr.executable_unit import ExecutableUnit
+from goose.executable_unit import ExecutableUnit
 
 
 class Bootstrap(Protocol):

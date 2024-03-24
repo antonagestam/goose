@@ -1,5 +1,6 @@
 import asyncio
 import enum
+import os
 import sys
 from pathlib import Path
 from typing import final, Final, assert_never, Mapping
@@ -37,14 +38,14 @@ _PersistedState = RootModel[InitialState | SyncedState]
 
 
 def read_state(env_dir: Path) -> InitialState | SyncedState:
-    state_file = env_dir / "hr-state.json"
+    state_file = env_dir / "goose-state.json"
     if not state_file.exists():
         return InitialState(stage=InitialStage.new)
     return _PersistedState.model_validate_json(state_file.read_bytes()).root
 
 
 def write_state(env_dir: Path, state: InitialState | SyncedState) -> None:
-    state_file = env_dir / "hr-state.json"
+    state_file = env_dir / "goose-state.json"
     state_file.write_text(state.model_dump_json())
 
 
@@ -157,6 +158,7 @@ class Environment:
         )
         self.state = InitialState(stage=InitialStage.frozen)
         write_state(self._path, self.state)
+        os.sync()
 
     async def sync(self) -> None:
         manifest = read_manifest(self.lock_files_path)

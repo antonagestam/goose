@@ -4,7 +4,7 @@ from .base import Backend
 from typing import Final, Mapping
 from types import MappingProxyType
 
-from hr.config import EcosystemConfig
+from goose.config import EcosystemConfig
 
 backends: Final[Mapping[str, Backend]] = MappingProxyType(
     {

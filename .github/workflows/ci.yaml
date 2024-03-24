@@ -25,17 +25,17 @@ jobs:
       with:
         python-version: "3.12"
         cache: pip
-        cache-dependency-path: hr-locks/**/manifest.json
+        cache-dependency-path: .goose/**/manifest.json
         check-latest: true
     - name: Environment cache
       uses: actions/cache@v4
       with:
-        path: ~/.cache/genesis
-        key: ${{ runner.os }}-genesis-3.12-${{ hashFiles('hr-locks/**/manifest.json') }}
+        path: ~/.cache/goose
+        key: ${{ runner.os }}-goose-3.12-${{ hashFiles('.goose/**/manifest.json') }}
         restore-keys: |
-          ${{ runner.os }}-genesis-3.12
-          ${{ runner.os }}-genesis
+          ${{ runner.os }}-goose-3.12
+          ${{ runner.os }}-goose
     - run: python3 -m pip install -r requirements.txt
-    - run: time python -X dev -m hr run --select=all --delete-orphan-environments
+    - run: time python -X dev -m goose run --select=all --delete-orphan-environments
       env:
         PYTHONPATH: src

@@ -10,7 +10,7 @@ def _get_cache_home() -> Path:
 
 
 def _get_base_envs_path() -> Path:
-    return _get_cache_home() / "genesis"
+    return _get_cache_home() / "goose"
 
 
 def get_env_path() -> Path:
