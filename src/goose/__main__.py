@@ -83,7 +83,7 @@ def format_hook_name(
     if RunResult.error in states:
         return Text(hook.id, style="red")
     if any(isinstance(state, asyncio.Task) for state in states):
-        return Text(hook.id, style="blue")
+        return Text(hook.id)
     if RunResult.ok in states:
         return Text(hook.id, style="green")
     return Text(hook.id, style="dim")
