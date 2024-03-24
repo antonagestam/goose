@@ -1,7 +1,13 @@
 import sys
+from rich.live import Live
+from rich.table import Table
+from rich.spinner import Spinner
+from rich.text import Text
+
 from pathlib import Path
 
-from .scheduler import Scheduler, format_unit_state, exit_code
+from hr.backend.base import RunResult
+from .scheduler import Scheduler, exit_code
 from .context import gather_context
 from .orphan_environments import probe_orphan_environments
 from .environment import prepare_environment
@@ -10,7 +16,7 @@ import asyncio
 from .targets import get_targets, Selector
 import typer
 from .asyncio import asyncio_entrypoint
-from typing import Annotated, TypeAlias, Final, Optional
+from typing import Annotated, TypeAlias, Final, Optional, assert_never
 
 ConfigOption: TypeAlias = Annotated[
     Path,
@@ -43,6 +49,24 @@ async def upgrade(
     print("All environments up-to-date", file=sys.stderr)
 
 
+def format_unit_state(
+    state: RunResult | asyncio.Task[RunResult] | None,
+    spinner,
+) -> Text | Spinner:
+    match state:
+        case None:
+            return Text("[W]")
+        case asyncio.Task():
+            # return "[blue][R][/blue]"
+            return spinner
+        case RunResult.ok:
+            return Text("[D]", style="green")
+        case RunResult.error:
+            return Text("[E]", style="red")
+        case no_match:
+            assert_never(no_match)
+
+
 @cli.command()
 @asyncio_entrypoint
 async def run(
@@ -73,14 +97,23 @@ async def run(
         selected_hook=selected_hook,
     )
 
-    async for _ in scheduler.until_complete():
-        print("---")
-        for hook, hook_units in scheduler.state().items():
-            print(f"{hook.id}\t: ", end="", file=sys.stderr)
-            for unit, unit_state in hook_units.items():
-                formatted = format_unit_state(unit_state)
-                print(f"{formatted} ", end="", file=sys.stderr)
-            print("", file=sys.stderr)
+    spinner = Spinner("point", style="blue")
+
+    with Live(refresh_per_second=10) as live:
+        async for _ in scheduler.until_complete():
+            hooks_table = Table(show_header=False)
+            hooks_table.add_column("Hook")
+            hooks_table.add_column("Processes")
+            for hook, hook_units in scheduler.state().items():
+                process_table = Table.grid()
+                process_table.add_row(
+                    *(
+                        format_unit_state(unit_state, spinner)
+                        for unit, unit_state in hook_units.items()
+                    )
+                )
+                hooks_table.add_row(hook.id, process_table)
+            live.update(hooks_table, refresh=True)
 
     sys.exit(exit_code(scheduler.state()))
 

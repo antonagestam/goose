@@ -2,7 +2,7 @@ import asyncio
 import os
 from collections.abc import Sequence, AsyncIterator
 from itertools import chain
-from typing import Final, TypeAlias, Mapping, assert_never
+from typing import Final, TypeAlias, Mapping
 
 from .backend.base import RunResult
 from .config import HookConfig
@@ -130,22 +130,6 @@ class Scheduler:
             hook: {unit: self._unit_state(unit) for unit in units}
             for hook, units in self._units.items()
         }
-
-
-def format_unit_state(
-    state: RunResult | asyncio.Task[RunResult] | None,
-) -> str:
-    match state:
-        case None:
-            return "[W]"
-        case asyncio.Task():
-            return "[R]"
-        case RunResult.ok:
-            return "[D]"
-        case RunResult.error:
-            return "[E]"
-        case no_match:
-            assert_never(no_match)
 
 
 def exit_code(state: SchedulerState) -> int:
