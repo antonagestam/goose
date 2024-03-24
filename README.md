@@ -8,6 +8,14 @@
 - Deterministic environments by using ecosystem-specific lock files.
 - Share environments across hooks.
 
+### Parallelism
+
+Goose takes care to keep your CPUs as busy as possible. It does this by distributing units of work to all processing cores. 
+
+Parameterized hooks, or hooks that take files as command line arguments, are divided to one unit of work per available core. Whenever a core becomes available for more work, a unit is scheduled.
+
+The scheduler takes care to never run more than one mutating hook on the same file.
+
 ### Todo
 
 - [x] Pass filenames
