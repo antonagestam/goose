@@ -51,13 +51,12 @@ async def upgrade(
 
 def format_unit_state(
     state: RunResult | asyncio.Task[RunResult] | None,
-    spinner,
-) -> Text | Spinner:
+    spinner: Table,
+) -> Text | Table:
     match state:
         case None:
             return Text("[W]")
         case asyncio.Task():
-            # return "[blue][R][/blue]"
             return spinner
         case RunResult.ok:
             return Text("[D]", style="green")
@@ -97,7 +96,12 @@ async def run(
         selected_hook=selected_hook,
     )
 
-    spinner = Spinner("point", style="blue")
+    spinner = Table.grid()
+    spinner.add_row(
+        "[blue][[/blue]",
+        Spinner("dots4", style="blue"),
+        "[blue]][/blue]",
+    )
 
     with Live(refresh_per_second=10) as live:
         async for _ in scheduler.until_complete():
@@ -105,7 +109,7 @@ async def run(
             hooks_table.add_column("Hook")
             hooks_table.add_column("Processes")
             for hook, hook_units in scheduler.state().items():
-                process_table = Table.grid()
+                process_table = Table.grid(padding=2)
                 process_table.add_row(
                     *(
                         format_unit_state(unit_state, spinner)

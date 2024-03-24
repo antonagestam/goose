@@ -14,6 +14,7 @@ environments:
       - types-pyyaml==6.0.12.20240311
       - typer==0.9.0
       - identify==2.5.35
+      - rich==13.7.1
 
   - id: python
     ecosystem:
