@@ -229,3 +229,4 @@ hooks:
 - [x] Exit 0 on fail
 - [ ] Write output to buffers, dump to stdout/err on error only
 - [x] Rich-based visualization of running units as table
+- [ ] Disable fancy output when not a TTY (`if sys.stdout.isatty(): ...`)
