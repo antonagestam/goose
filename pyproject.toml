@@ -88,6 +88,8 @@ extend-select = [
   # tidy imports
   # We use this to only outlaw relative _parent_ imports, other relative imports are OK.
   "TID",
+  # Pylint
+  "PL",
 ]
 extend-ignore = [
   # There's no reason to outlaw asserts.

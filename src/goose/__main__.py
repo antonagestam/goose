@@ -1,6 +1,7 @@
 import asyncio
 import sys
 from collections.abc import Iterator
+from collections.abc import Set
 from pathlib import Path
 from typing import Annotated
 from typing import Final
@@ -10,11 +11,13 @@ from typing import assert_never
 
 import typer
 from rich.live import Live
+from rich.panel import Panel
 from rich.spinner import Spinner
 from rich.table import Table
 from rich.text import Text
 
 from goose.backend.base import RunResult
+from goose.config import HookConfig
 
 from .asyncio import asyncio_entrypoint
 from .context import gather_context
@@ -73,7 +76,20 @@ def format_unit_state(
             assert_never(no_match)
 
 
-def generate_live_process_table(scheduler: Scheduler) -> Iterator[Table]:
+def format_hook_name(
+    hook: HookConfig,
+    states: Set[RunResult | asyncio.Task[RunResult] | None],
+) -> Text:
+    if RunResult.error in states:
+        return Text(hook.id, style="red")
+    if any(isinstance(state, asyncio.Task) for state in states):
+        return Text(hook.id, style="blue")
+    if RunResult.ok in states:
+        return Text(hook.id, style="green")
+    return Text(hook.id, style="dim")
+
+
+def generate_live_process_table(scheduler: Scheduler) -> Iterator[Panel]:
     spinner = Table.grid()
     spinner.add_row(
         "[blue][[/blue]",
@@ -82,7 +98,10 @@ def generate_live_process_table(scheduler: Scheduler) -> Iterator[Table]:
     )
 
     while True:
-        hooks_table = Table(show_header=False)
+        hooks_table = Table(
+            show_header=False,
+            show_edge=False,
+        )
         hooks_table.add_column("Hook")
         hooks_table.add_column("Processes")
         for hook, hook_units in scheduler.state().items():
@@ -93,8 +112,15 @@ def generate_live_process_table(scheduler: Scheduler) -> Iterator[Table]:
                     for unit, unit_state in hook_units.items()
                 )
             )
-            hooks_table.add_row(hook.id, process_table)
-        yield hooks_table
+            hooks_table.add_row(
+                format_hook_name(hook, frozenset(hook_units.values())),
+                process_table,
+            )
+        yield Panel(
+            hooks_table,
+            title="Running hooks",
+            border_style="magenta",
+        )
 
 
 async def display_live_table(scheduler: Scheduler) -> None:
