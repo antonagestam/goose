@@ -45,7 +45,7 @@ class Config(BaseModel):
     hooks: tuple[HookConfig, ...]
     exclude: tuple[Pattern, ...] = ()
 
-    @model_validator(mode="after")
+    @model_validator(mode="after")  # type: ignore[misc]
     def validate_hook_environments_configured(self) -> Self:
         environments = {env.id for env in self.environments}
         for hook in self.hooks:

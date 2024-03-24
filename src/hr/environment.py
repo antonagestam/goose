@@ -10,8 +10,8 @@ from ._utils.pydantic import BaseModel
 from .backend.base import RunResult
 from .backend.index import load_backend
 from .config import EnvironmentConfig, Config, EnvironmentId
+from .executable_unit import ExecutableUnit
 from .manifest import check_lock_files, LockFileState, read_manifest
-from .parallel import ExecutableUnit
 
 
 class InitialStage(enum.Enum):
@@ -79,59 +79,67 @@ class Environment:
     def check_should_freeze(self) -> bool:
         # Check if current lock files are up-to-date with dependencies
         # configured for the environment.
-        match check_lock_files(
+        state = check_lock_files(
             lock_files_path=self.lock_files_path,
             state_checksum=None,
             config=self.config,
+        )
+
+        if (
+            state is LockFileState.missing_lock_file
+            or state is LockFileState.manifest_lock_file_mismatch
+            or state is LockFileState.config_manifest_mismatch
         ):
-            case (
-                LockFileState.missing_lock_file
-                | LockFileState.manifest_lock_file_mismatch
-                | LockFileState.config_manifest_mismatch
-            ):
-                return True
-            case (
-                LockFileState.matching
-                # Mismatch between state and manifest needs _sync_ needs to run, but
-                # does not indicate lock files are out of sync with configured
-                # dependencies. So no need to run freeze again.
-                | LockFileState.state_manifest_mismatch
-            ):
-                return False
-            case no_match:
-                assert_never(no_match)
+            return True
+        elif (
+            state is LockFileState.matching
+            # Mismatch between state and manifest needs _sync_ needs to run, but
+            # does not indicate lock files are out of sync with configured
+            # dependencies. So no need to run freeze again.
+            or state is LockFileState.state_manifest_mismatch
+        ):
+            return False
+        else:
+            assert_never(state)
 
     def check_should_sync(self) -> bool:
         if not isinstance(self.state, SyncedState):
             return True
 
-        match check_lock_files(
+        state = check_lock_files(
             lock_files_path=self.lock_files_path,
             state_checksum=self.state.checksum,
             config=self.config,
-        ):
-            case LockFileState.matching:
-                return False
-            case LockFileState.missing_lock_file:
-                print(
-                    f"[{self.config.id}] Expected lock file is missing.",
-                    file=sys.stderr,
-                )
-                return True
-            case LockFileState.state_manifest_mismatch:
-                print(
-                    f"[{self.config.id}] Environment state does not match manifest.",
-                    file=sys.stderr,
-                )
-                return True
-            case LockFileState.manifest_lock_file_mismatch:
-                raise RuntimeError(
-                    "Manifest does not match lock file, needs freezing. "
-                    "This should not normally occur, as freezing is always "
-                    "checked before syncing."
-                )
-            case no_match:
-                assert_never(no_match)
+        )
+
+        if state is LockFileState.matching:
+            return False
+        elif state is LockFileState.missing_lock_file:
+            print(
+                f"[{self.config.id}] Expected lock file is missing.",
+                file=sys.stderr,
+            )
+            return True
+        elif state is LockFileState.state_manifest_mismatch:
+            print(
+                f"[{self.config.id}] Environment state does not match manifest.",
+                file=sys.stderr,
+            )
+            return True
+        elif state is LockFileState.manifest_lock_file_mismatch:
+            raise RuntimeError(
+                "Manifest does not match lock file, needs freezing. "
+                "This should not normally occur, as freezing is always "
+                "checked before syncing."
+            )
+        elif state is LockFileState.config_manifest_mismatch:
+            raise RuntimeError(
+                "Manifest does not match configuration, needs freezing. "
+                "This should not normally occur, as freezing is always "
+                "checked before syncing."
+            )
+        else:
+            assert_never(state)
 
     async def bootstrap(self) -> None:
         await self._backend.bootstrap(

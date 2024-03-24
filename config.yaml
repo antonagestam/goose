@@ -4,15 +4,18 @@ exclude:
   - ^hr-locks/.*
 
 environments:
-  - id: python312
+  - id: type-check
     ecosystem:
       language: python
       version: "3.12"
     dependencies:
-      - black
       - mypy
+      - pydantic==2.6.4
+      - types-pyyaml==6.0.12.20240311
+      - typer==0.9.0
+      - identify==2.5.35
 
-  - id: python-sep
+  - id: python
     ecosystem:
       language: python
       version: "3.12"
@@ -28,48 +31,56 @@ environments:
       - prettier
 
 hooks:
+  - id: mypy
+    environment: type-check
+    command: env
+    args: [FORCE_COLOR=1, mypy]
+    read_only: true
+    parameterize: false
+
   - id: check-case-conflict
-    environment: python-sep
+    environment: python
     command: check-case-conflict
     read_only: true
 
   - id: check-merge-conflict
-    environment: python-sep
+    environment: python
     command: check-merge-conflict
     read_only: true
     types: [text]
 
   - id: python-debug-statements
-    environment: python-sep
+    environment: python
     command: debug-statement-hook
     read_only: true
     types: [python]
 
   - id: detect-private-key
-    environment: python-sep
+    environment: python
     command: detect-private-key
     read_only: true
     types: [text]
 
   - id: end-of-file-fixer
-    environment: python-sep
+    environment: python
     command: end-of-file-fixer
     types: [text]
 
   - id: trailing-whitespace-fixer
-    environment: python-sep
+    environment: python
     command: trailing-whitespace-fixer
     types: [text]
 
   - id: ruff
-    environment: python-sep
+    environment: python
     command: ruff
     args: [check, --force-exclude, --fix]
     types: [python]
 
-  - id: black
-    environment: python312
-    command: black
+  - id: ruff-format
+    environment: python
+    command: ruff
+    args: [format]
     types: [python]
 
   - id: prettier

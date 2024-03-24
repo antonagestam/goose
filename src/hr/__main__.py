@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-from hr.scheduler import Scheduler, format_unit_state, exit_code
+from .scheduler import Scheduler, format_unit_state, exit_code
 from .context import gather_context
 from .orphan_environments import probe_orphan_environments
 from .environment import prepare_environment
@@ -10,8 +10,7 @@ import asyncio
 from .targets import get_targets, Selector
 import typer
 from .asyncio import asyncio_entrypoint
-from typing import Annotated, TypeAlias, Final
-
+from typing import Annotated, TypeAlias, Final, Optional
 
 ConfigOption: TypeAlias = Annotated[
     Path,
@@ -26,7 +25,7 @@ ConfigOption: TypeAlias = Annotated[
 default_config: Final = Path("config.yaml")
 
 
-cli = typer.Typer()
+cli = typer.Typer(pretty_exceptions_enable=False)
 
 
 @cli.command()
@@ -47,6 +46,7 @@ async def upgrade(
 @cli.command()
 @asyncio_entrypoint
 async def run(
+    selected_hook: Optional[str] = typer.Argument(default=None),
     config_path: ConfigOption = default_config,
     delete_orphan_environments: bool = False,
     select: Selector = typer.Option(default="diff"),
@@ -67,7 +67,11 @@ async def run(
     await asyncio.gather(*prepare_tasks)
     print("All environments ready", file=sys.stderr)
 
-    scheduler = Scheduler(ctx, await get_targets_task)
+    scheduler = Scheduler(
+        context=ctx,
+        targets=await get_targets_task,
+        selected_hook=selected_hook,
+    )
 
     async for _ in scheduler.until_complete():
         print("---")

@@ -22,13 +22,22 @@ class Scheduler:
         self,
         context: Context,
         targets: Sequence[Target],
+        selected_hook: str | None = None,
     ) -> None:
         self._context: Final = context
-        self._max_running: Final = os.cpu_count()
+        self._max_running: Final = os.cpu_count() or 2
         self._units: Final = {
             hook: tuple(hook_as_executable_units(hook, targets))
             for hook in context.config.hooks
+            if selected_hook is None or hook.id == selected_hook
         }
+
+        if not self._units:
+            if selected_hook is None:
+                raise RuntimeError("No hooks configured")
+            else:
+                raise RuntimeError(f"Unknown hook id: {selected_hook}")
+
         self._remaining_units: Final[list[ExecutableUnit]] = list(
             chain(*self._units.values())
         )

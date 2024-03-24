@@ -12,7 +12,7 @@ class Context:
     config: Config
     lock_files_path: Path
     environments_path: Path
-    environments: Mapping[EnvironmentId, Environment] = ()
+    environments: Mapping[EnvironmentId, Environment]
 
 
 def gather_context(

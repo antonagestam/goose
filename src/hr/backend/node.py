@@ -5,7 +5,7 @@ import contextlib
 import os
 import sys
 from pathlib import Path
-from typing import Final, Mapping, Iterator
+from typing import Final, Mapping, Iterator, Sequence
 
 from pydantic import Field
 
@@ -153,16 +153,17 @@ async def run(
     config: EnvironmentConfig,
     unit: ExecutableUnit,
 ) -> RunResult:
+    args: Sequence[str | Path] = (
+        "exec",
+        f"--prefix={env_path}",
+        unit.hook.command,
+        "--",
+        *unit.hook.args,
+        *unit.targets,
+    )
     process = await asyncio.create_subprocess_exec(
         env_path / "bin" / "npm",
-        *(
-            "exec",
-            f"--prefix={env_path}",
-            unit.hook.command,
-            "--",
-            *unit.hook.args,
-            *unit.targets,
-        ),
+        *args,
         env=os.environ | {"PATH": f"{os.environ['PATH']}:{env_path / 'bin'}"},
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,

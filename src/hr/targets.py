@@ -33,6 +33,7 @@ class Selector(enum.Enum):
 
 
 async def _git_file_list(selector: Selector) -> AsyncIterator[Path]:
+    command: Sequence[str]
     if selector is Selector.all:
         command = ("git", "ls-files", "-z")
     elif selector is Selector.diff:
@@ -51,6 +52,8 @@ async def _git_file_list(selector: Selector) -> AsyncIterator[Path]:
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
+    assert process.stdout is not None
+    assert process.stderr is not None
     stream_stderr = asyncio.create_task(stream_out("[stderr]", process.stderr))
     while not process.stdout.at_eof():
         line = await process.stdout.readline()

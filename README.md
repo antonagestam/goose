@@ -13,7 +13,7 @@
 - [x] Only changed files
 - [x] Run on all files
 - [ ] Git hook installation
-- [ ] Run single hook
+- [x] Run single hook
 - [x] Exit 0 on fail
 - [ ] Write output to buffers, dump to stdout/err on error only
 - [ ] Rich-based visualization of running units as table

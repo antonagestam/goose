@@ -19,6 +19,8 @@ async def stream_out(
 
 
 async def stream_both(process: asyncio.subprocess.Process) -> None:
+    assert process.stdout is not None
+    assert process.stderr is not None
     stream_stdout = asyncio.create_task(stream_out("[stdout]", process.stdout))
     stream_stderr = asyncio.create_task(stream_out("[stderr]", process.stderr))
     await asyncio.gather(stream_stdout, stream_stderr)

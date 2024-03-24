@@ -3,7 +3,7 @@ from pathlib import Path
 
 from hr.config import EnvironmentConfig
 from dataclasses import dataclass
-from typing import final, Awaitable, Protocol
+from typing import final, Awaitable, Protocol, Coroutine
 
 from hr.executable_unit import ExecutableUnit
 
@@ -49,7 +49,7 @@ class Run(Protocol):
         config: EnvironmentConfig,
         env_path: Path,
         unit: ExecutableUnit,
-    ) -> Awaitable[RunResult]: ...
+    ) -> Coroutine[None, None, RunResult]: ...
 
 
 @final

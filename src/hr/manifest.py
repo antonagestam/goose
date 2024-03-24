@@ -3,7 +3,7 @@ import hashlib
 import sys
 from functools import total_ordering
 from pathlib import Path
-from typing import final, Self, Iterable
+from typing import final, Self, Iterable, TypeVar, Collection
 
 from pydantic import field_validator, ValidationInfo
 
@@ -26,6 +26,9 @@ class LockFile(BaseModel):
         return self.path < other.path
 
 
+C = TypeVar("C", bound=Collection)
+
+
 class LockManifest(BaseModel):
     source_dependencies: tuple[str, ...]
     lock_files: tuple[LockFile, ...]
@@ -33,28 +36,28 @@ class LockManifest(BaseModel):
 
     @field_validator("source_dependencies", "lock_files")
     @classmethod
-    def validate_sorted(cls, v: tuple[object, ...]) -> None:
+    def validate_sorted(cls, v: C) -> C:
         if sorted(v) != list(v):
             raise ValueError("must be sorted")
         return v
 
     @field_validator("source_dependencies", "lock_files")
     @classmethod
-    def validate_unique(cls, v: tuple[object, ...]) -> None:
+    def validate_unique(cls, v: C) -> C:
         if len(set(v)) != len(v):
             raise ValueError("must be unique")
         return v
 
     @field_validator("source_dependencies", "lock_files")
     @classmethod
-    def validate_non_empty(cls, v: tuple[object, ...]) -> None:
+    def validate_non_empty(cls, v: C) -> C:
         if len(v) == 0:
             raise ValueError("must not be empty")
         return v
 
     @field_validator("checksum")
     @classmethod
-    def validate_checksum_matches(cls, v: str, info: ValidationInfo) -> None:
+    def validate_checksum_matches(cls, v: str, info: ValidationInfo) -> str:
         expected = _get_accumulated_checksum(info.data["lock_files"])
         if v != expected:
             raise ValueError(
@@ -90,13 +93,13 @@ def build_manifest(
     lock_files: Iterable[Path],
     lock_files_path: Path,
 ) -> LockManifest:
-    lock_files = tuple(
+    lock_file_instances = tuple(
         sorted(read_lock_file(lock_files_path, path) for path in lock_files)
     )
     return LockManifest(
         source_dependencies=tuple(sorted(source_dependencies)),
-        lock_files=lock_files,
-        checksum=_get_accumulated_checksum(lock_files),
+        lock_files=lock_file_instances,
+        checksum=_get_accumulated_checksum(lock_file_instances),
     )
 
 
@@ -127,7 +130,10 @@ def check_lock_files(
     state_checksum: str | None,
     config: EnvironmentConfig,
 ) -> LockFileState:
-    manifest = read_manifest(lock_files_path)
+    try:
+        manifest = read_manifest(lock_files_path)
+    except FileNotFoundError:
+        return LockFileState.config_manifest_mismatch
 
     if set(config.dependencies) ^ set(manifest.source_dependencies):
         return LockFileState.config_manifest_mismatch
