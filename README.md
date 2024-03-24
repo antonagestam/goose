@@ -1,4 +1,4 @@
-# genesis
+# goose 🦆
 
 #### Todo
 
@@ -16,4 +16,4 @@
 - [x] Run single hook
 - [x] Exit 0 on fail
 - [ ] Write output to buffers, dump to stdout/err on error only
-- [ ] Rich-based visualization of running units as table
+- [x] Rich-based visualization of running units as table
