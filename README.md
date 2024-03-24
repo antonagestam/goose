@@ -92,8 +92,8 @@ $ git commit -m 'Bump goose dependencies'
 
 ### Example node hook
 
-Goose currently supports Python and Node environments, here's an example using [Prettier]
-to format Markdown files.
+Goose currently supports Python and Node environments, here's an example using
+[Prettier] to format Markdown files.
 
 [Prettier]: https://prettier.io/
 
@@ -186,8 +186,9 @@ over the same file.
 ### Non-parameterized hooks
 
 Some tools don't support passing files, or just work better if given the responsibility
-to parallelize work itself. One such tool is mypy. You can instruct goose to not pass filenames
-to a hook (and as a consequence, also not spawn multiple parallel jobs for this hook).
+to parallelize work itself. One such tool is mypy. You can instruct goose to not pass
+filenames to a hook (and as a consequence, also not spawn multiple parallel jobs for
+this hook).
 
 ```yaml
 version: 0
