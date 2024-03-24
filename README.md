@@ -1,4 +1,4 @@
-<h1 align=center>goose 🦆</h1>
+<h1 align=center>goose 🦆🧪</h1>
 
 <p align=center>A <i>picky</i> and <i>eager</i> <a href=https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks>Git hook</a> runner.</p>
 
