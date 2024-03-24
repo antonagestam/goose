@@ -1,13 +1,14 @@
 import math
 import os
 import sys
+from collections.abc import Iterator
 from collections.abc import Sequence
 from itertools import batched
-from typing import Iterator
 
 from .config import HookConfig
 from .executable_unit import ExecutableUnit
-from .targets import filter_hook_targets, Target
+from .targets import Target
+from .targets import filter_hook_targets
 
 
 def hook_as_executable_units(

@@ -1,15 +1,21 @@
-import os
 import asyncio
 import asyncio.subprocess
+import os
 import sys
+from collections.abc import Iterable
 from contextlib import ExitStack
 from pathlib import Path
-from typing import Final, Iterable
-from .base import Backend, RunResult
+from typing import Final
+
 from goose.config import EnvironmentConfig
-from goose.manifest import build_manifest, write_manifest
-from ._process import stream_both, system_python
 from goose.executable_unit import ExecutableUnit
+from goose.manifest import build_manifest
+from goose.manifest import write_manifest
+
+from ._process import stream_both
+from ._process import system_python
+from .base import Backend
+from .base import RunResult
 
 
 def _venv_python(env_path: Path) -> Path:

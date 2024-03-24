@@ -1,6 +1,9 @@
 import asyncio
 import functools
-from typing import Callable, ParamSpec, TypeVar, Coroutine
+from collections.abc import Callable
+from collections.abc import Coroutine
+from typing import ParamSpec
+from typing import TypeVar
 
 P = ParamSpec("P")
 R = TypeVar("R")

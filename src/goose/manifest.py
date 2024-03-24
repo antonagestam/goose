@@ -1,11 +1,16 @@
 import enum
 import hashlib
 import sys
+from collections.abc import Collection
+from collections.abc import Iterable
 from functools import total_ordering
 from pathlib import Path
-from typing import final, Self, Iterable, TypeVar, Collection
+from typing import Self
+from typing import TypeVar
+from typing import final
 
-from pydantic import field_validator, ValidationInfo
+from pydantic import ValidationInfo
+from pydantic import field_validator
 
 from ._utils.pydantic import BaseModel
 from .config import EnvironmentConfig

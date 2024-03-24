@@ -1,6 +1,6 @@
+import hashlib
 import os
 from pathlib import Path
-import hashlib
 
 
 def _get_cache_home() -> Path:

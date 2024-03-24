@@ -1,9 +1,12 @@
-from pathlib import Path
-from typing import Mapping
+from collections.abc import Mapping
 from dataclasses import dataclass
+from pathlib import Path
 
-from .config import Config, load_config, EnvironmentId
-from .environment import Environment, build_environments
+from .config import Config
+from .config import EnvironmentId
+from .config import load_config
+from .environment import Environment
+from .environment import build_environments
 from .paths import get_env_path
 
 

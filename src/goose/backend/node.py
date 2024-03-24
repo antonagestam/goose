@@ -1,20 +1,27 @@
-import asyncio.subprocess
 import asyncio
-import shutil
+import asyncio.subprocess
 import contextlib
 import os
+import shutil
 import sys
+from collections.abc import Iterator
+from collections.abc import Mapping
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Final, Mapping, Iterator, Sequence
+from typing import Final
 
 from pydantic import Field
 
-from .base import Backend, RunResult
-from goose.config import EnvironmentConfig
-from goose.manifest import build_manifest, write_manifest
-from ._process import stream_both, system_python
 from goose._utils.pydantic import BaseModel
+from goose.config import EnvironmentConfig
 from goose.executable_unit import ExecutableUnit
+from goose.manifest import build_manifest
+from goose.manifest import write_manifest
+
+from ._process import stream_both
+from ._process import system_python
+from .base import Backend
+from .base import RunResult
 
 
 class PackageJson(BaseModel):

@@ -1,8 +1,12 @@
 import asyncio
 import os
-from collections.abc import Sequence, AsyncIterator
+from collections.abc import AsyncIterator
+from collections.abc import Iterator
+from collections.abc import Mapping
+from collections.abc import Sequence
 from itertools import chain
-from typing import Final, TypeAlias, Mapping, Iterator
+from typing import Final
+from typing import TypeAlias
 
 from .backend.base import RunResult
 from .config import HookConfig
@@ -10,7 +14,6 @@ from .context import Context
 from .executable_unit import ExecutableUnit
 from .parallel import hook_as_executable_units
 from .targets import Target
-
 
 SchedulerState: TypeAlias = Mapping[
     HookConfig, Mapping[ExecutableUnit, RunResult | asyncio.Task[RunResult] | None]

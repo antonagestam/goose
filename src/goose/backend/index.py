@@ -1,10 +1,12 @@
-from . import python
-from . import node
-from .base import Backend
-from typing import Final, Mapping
+from collections.abc import Mapping
 from types import MappingProxyType
+from typing import Final
 
 from goose.config import EcosystemConfig
+
+from . import node
+from . import python
+from .base import Backend
 
 backends: Final[Mapping[str, Backend]] = MappingProxyType(
     {

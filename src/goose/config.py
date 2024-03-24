@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-from re import Pattern
-from typing import Literal, final, Self, NewType
-
 from pathlib import Path
-import yaml
+from re import Pattern
+from typing import Literal
+from typing import NewType
+from typing import Self
+from typing import final
 
+import yaml
 from pydantic import model_validator
+
 from ._utils.pydantic import BaseModel
 
 

@@ -1,5 +1,6 @@
-import sys
 import shutil
+import sys
+
 from .context import Context
 
 

@@ -2,17 +2,24 @@ import asyncio
 import enum
 import os
 import sys
+from collections.abc import Mapping
 from pathlib import Path
-from typing import final, Final, assert_never, Mapping
+from typing import Final
+from typing import assert_never
+from typing import final
 
 from pydantic import RootModel
 
 from ._utils.pydantic import BaseModel
 from .backend.base import RunResult
 from .backend.index import load_backend
-from .config import EnvironmentConfig, Config, EnvironmentId
+from .config import Config
+from .config import EnvironmentConfig
+from .config import EnvironmentId
 from .executable_unit import ExecutableUnit
-from .manifest import check_lock_files, LockFileState, read_manifest
+from .manifest import LockFileState
+from .manifest import check_lock_files
+from .manifest import read_manifest
 
 
 class InitialStage(enum.Enum):

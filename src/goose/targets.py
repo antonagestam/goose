@@ -1,16 +1,19 @@
 import asyncio
 import asyncio.subprocess
 import enum
+from collections.abc import AsyncIterator
+from collections.abc import Iterator
+from collections.abc import Sequence
+from dataclasses import dataclass
 from pathlib import Path
-from typing import AsyncIterator, Iterator, assert_never, Sequence
+from typing import assert_never
 
 # todo: address liability
 from identify.identify import tags_from_filename
 
 from .backend._process import stream_out
-from .config import Config, HookConfig
-from dataclasses import dataclass
-
+from .config import Config
+from .config import HookConfig
 from .filter import path_matches_patterns
 
 

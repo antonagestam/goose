@@ -1,6 +1,6 @@
+from collections.abc import Iterable
 from pathlib import Path
 from re import Pattern
-from typing import Iterable
 
 
 def path_matches_patterns(

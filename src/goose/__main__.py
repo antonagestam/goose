@@ -1,22 +1,29 @@
+import asyncio
 import sys
+from collections.abc import Iterator
+from pathlib import Path
+from typing import Annotated
+from typing import Final
+from typing import Optional
+from typing import TypeAlias
+from typing import assert_never
+
+import typer
 from rich.live import Live
-from rich.table import Table
 from rich.spinner import Spinner
+from rich.table import Table
 from rich.text import Text
 
-from pathlib import Path
-
 from goose.backend.base import RunResult
-from .scheduler import Scheduler, exit_code
-from .context import gather_context
-from .orphan_environments import probe_orphan_environments
-from .environment import prepare_environment
-import asyncio
 
-from .targets import get_targets, Selector
-import typer
 from .asyncio import asyncio_entrypoint
-from typing import Annotated, TypeAlias, Final, Optional, assert_never, Iterator
+from .context import gather_context
+from .environment import prepare_environment
+from .orphan_environments import probe_orphan_environments
+from .scheduler import Scheduler
+from .scheduler import exit_code
+from .targets import Selector
+from .targets import get_targets
 
 ConfigOption: TypeAlias = Annotated[
     Path,
@@ -102,7 +109,7 @@ async def display_live_table(scheduler: Scheduler) -> None:
 @cli.command()
 @asyncio_entrypoint
 async def run(
-    selected_hook: Optional[str] = typer.Argument(default=None),
+    selected_hook: Optional[str] = typer.Argument(default=None),  # noqa
     config_path: ConfigOption = default_config,
     delete_orphan_environments: bool = False,
     select: Selector = typer.Option(default="diff"),

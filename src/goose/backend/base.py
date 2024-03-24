@@ -1,10 +1,12 @@
 import enum
+from collections.abc import Awaitable
+from collections.abc import Coroutine
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Protocol
+from typing import final
 
 from goose.config import EnvironmentConfig
-from dataclasses import dataclass
-from typing import final, Awaitable, Protocol, Coroutine
-
 from goose.executable_unit import ExecutableUnit
 
 
