@@ -54,8 +54,7 @@ disallow_untyped_decorators = false
 disallow_incomplete_defs = false
 
 [tool.ruff]
-fix = true
-target-version = "py310"
+target-version = "py312"
 
 [tool.ruff.lint]
 extend-select = [
@@ -104,6 +103,8 @@ extend-ignore = [
   # "Yoda conditions are discouraged", this is dangerous to apply, as it
   # destroys some cases that are designed to test bi-directional equality.
   "SIM300",
+  # Not yet supported in mypy.
+  "UP040",
 ]
 
 [tool.ruff.lint.isort]
