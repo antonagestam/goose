@@ -109,7 +109,7 @@ extend-ignore = [
 
 [tool.ruff.lint.isort]
 force-single-line = true
-known-first-party = ["immoney", "tests"]
+known-first-party = ["goose", "tests"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 10
