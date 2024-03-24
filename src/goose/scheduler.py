@@ -2,7 +2,7 @@ import asyncio
 import os
 from collections.abc import Sequence, AsyncIterator
 from itertools import chain
-from typing import Final, TypeAlias, Mapping
+from typing import Final, TypeAlias, Mapping, Iterator
 
 from .backend.base import RunResult
 from .config import HookConfig
@@ -49,7 +49,7 @@ class Scheduler:
         environment = self._context.environments[unit.hook.environment]
         self._running_units[unit] = environment.run(unit)
 
-    def _schedule_max(self) -> None:
+    def _schedule_max(self) -> Iterator[None]:
         for unit in tuple(self._remaining_units):
             # If we're at capacity, don't schedule more.
             if len(self._running_units) >= self._max_running:
@@ -58,6 +58,7 @@ class Scheduler:
             # If no other task running, start.
             if not self._running_units:
                 self._schedule_unit(unit)
+                yield
                 continue
 
             # If running tasks have disjoint set of files vs current, start.
@@ -66,6 +67,7 @@ class Scheduler:
             )
             if not unit.targets & running_file_set:
                 self._schedule_unit(unit)
+                yield
                 continue
 
             # If running tasks overlap with current, but neither mutates, start.
@@ -73,6 +75,7 @@ class Scheduler:
                 other_unit.hook.read_only for other_unit in self._running_units.keys()
             ):
                 self._schedule_unit(unit)
+                yield
                 continue
 
     def _prune_running(self) -> None:
@@ -104,7 +107,8 @@ class Scheduler:
         while self._remaining_units:
             # Do a single loop over remaining tasks, and schedule as many as
             # possible.
-            self._schedule_max()
+            for _ in self._schedule_max():
+                yield
 
             if not self._remaining_units:
                 break

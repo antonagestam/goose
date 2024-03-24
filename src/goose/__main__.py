@@ -16,7 +16,7 @@ import asyncio
 from .targets import get_targets, Selector
 import typer
 from .asyncio import asyncio_entrypoint
-from typing import Annotated, TypeAlias, Final, Optional, assert_never
+from typing import Annotated, TypeAlias, Final, Optional, assert_never, Iterator
 
 ConfigOption: TypeAlias = Annotated[
     Path,
@@ -66,6 +66,39 @@ def format_unit_state(
             assert_never(no_match)
 
 
+def generate_live_process_table(scheduler: Scheduler) -> Iterator[Table]:
+    spinner = Table.grid()
+    spinner.add_row(
+        "[blue][[/blue]",
+        Spinner("dots4", style="blue"),
+        "[blue]][/blue]",
+    )
+
+    while True:
+        hooks_table = Table(show_header=False)
+        hooks_table.add_column("Hook")
+        hooks_table.add_column("Processes")
+        for hook, hook_units in scheduler.state().items():
+            process_table = Table.grid(padding=2)
+            process_table.add_row(
+                *(
+                    format_unit_state(unit_state, spinner)
+                    for unit, unit_state in hook_units.items()
+                )
+            )
+            hooks_table.add_row(hook.id, process_table)
+        yield hooks_table
+
+
+async def display_live_table(scheduler: Scheduler) -> None:
+    live_table = generate_live_process_table(scheduler)
+
+    with Live(refresh_per_second=10) as live:
+        live.update(next(live_table), refresh=True)
+        async for _ in scheduler.until_complete():
+            live.update(next(live_table), refresh=True)
+
+
 @cli.command()
 @asyncio_entrypoint
 async def run(
@@ -96,28 +129,11 @@ async def run(
         selected_hook=selected_hook,
     )
 
-    spinner = Table.grid()
-    spinner.add_row(
-        "[blue][[/blue]",
-        Spinner("dots4", style="blue"),
-        "[blue]][/blue]",
-    )
-
-    with Live(refresh_per_second=10) as live:
+    if sys.stdout.isatty():
+        await display_live_table(scheduler)
+    else:
         async for _ in scheduler.until_complete():
-            hooks_table = Table(show_header=False)
-            hooks_table.add_column("Hook")
-            hooks_table.add_column("Processes")
-            for hook, hook_units in scheduler.state().items():
-                process_table = Table.grid(padding=2)
-                process_table.add_row(
-                    *(
-                        format_unit_state(unit_state, spinner)
-                        for unit, unit_state in hook_units.items()
-                    )
-                )
-                hooks_table.add_row(hook.id, process_table)
-            live.update(hooks_table, refresh=True)
+            pass
 
     sys.exit(exit_code(scheduler.state()))
 
