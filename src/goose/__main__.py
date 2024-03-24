@@ -1,7 +1,7 @@
 import asyncio
 import sys
+from collections.abc import Collection
 from collections.abc import Iterator
-from collections.abc import Set
 from pathlib import Path
 from typing import Annotated
 from typing import Final
@@ -78,7 +78,7 @@ def format_unit_state(
 
 def format_hook_name(
     hook: HookConfig,
-    states: Set[RunResult | asyncio.Task[RunResult] | None],
+    states: Collection[RunResult | asyncio.Task[RunResult] | None],
 ) -> Text:
     if RunResult.error in states:
         return Text(hook.id, style="red")
@@ -113,7 +113,7 @@ def generate_live_process_table(scheduler: Scheduler) -> Iterator[Panel]:
                 )
             )
             hooks_table.add_row(
-                format_hook_name(hook, frozenset(hook_units.values())),
+                format_hook_name(hook, hook_units.values()),
                 process_table,
             )
         yield Panel(
