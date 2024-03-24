@@ -230,3 +230,5 @@ hooks:
 - [ ] Write output to buffers, dump to stdout/err on error only
 - [x] Rich-based visualization of running units as table
 - [x] Disable fancy output when not a TTY (`if sys.stdout.isatty(): ...`)
+- [ ] Flag for disabling freezing, and instead error out if lock files are out of sync.
+      In CI, we don't want to be silently overwriting lock files.
