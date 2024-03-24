@@ -28,7 +28,7 @@ ConfigOption: TypeAlias = Annotated[
         dir_okay=False,
     ),
 ]
-default_config: Final = Path("config.yaml")
+default_config: Final = Path("goose.yaml")
 
 
 cli = typer.Typer(pretty_exceptions_enable=False)
