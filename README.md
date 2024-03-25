@@ -61,7 +61,7 @@ hooks:
   - id: ruff-format
     environment: python
     command: ruff
-    args: [format]
+    args: [format, --force-exclude]
     types: [python]
 ```
 
