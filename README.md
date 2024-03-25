@@ -236,3 +236,5 @@ hooks:
       "spawned", "finished". In non-tty, this could be used to print unfancy text
       output.
 - [ ] Error on changed files.
+- [ ] Exclude lock file path implicitly.
+- [ ] Option to print git diff on failure.
