@@ -83,6 +83,7 @@ hooks:
     command: ruff
     args: [format, --force-exclude]
     types: [python]
+    after: [ruff]
 
   - id: prettier
     environment: node
