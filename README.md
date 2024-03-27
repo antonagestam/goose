@@ -223,6 +223,8 @@ hooks:
 - [ ] `until_complete()` could be improved to generate _type_ of event, such as
       "spawned", "finished". In non-tty, this could be used to print unfancy text
       output.
-- [ ] Error on changed files.
+- [ ] ⚠️ Error on changed files.
+  - Need to capture this locally per unit. Gather state of all targets before-hand and
+    after each executed unit. Will be interesting for performance.
 - [x] Exclude lock file path implicitly.
 - [ ] Option to print git diff on failure.
