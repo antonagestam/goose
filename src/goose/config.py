@@ -39,7 +39,6 @@ class HookConfig(BaseModel):
     types: frozenset[str] = frozenset()
     exclude: tuple[Pattern, ...] = ()
     read_only: bool = False
-    after: tuple[str, ...] = ()
 
 
 @final
@@ -55,17 +54,6 @@ class Config(BaseModel):
         for hook in self.hooks:
             if hook.environment not in environments:
                 raise ValueError(f"Unknown hook environment: {hook.environment!r}")
-        return self
-
-    @model_validator(mode="after")  # type: ignore[misc]
-    def validate_hook_dependencies_exist(self) -> Self:
-        configured_hooks = set[str]()
-        configured_dependencies = set[str]()
-        for hook in self.hooks:
-            configured_hooks.add(hook.id)
-            configured_dependencies.update(hook.after)
-        if missing := (configured_dependencies - configured_hooks):
-            raise ValueError(f"Unknown hooks configured as dependency: {missing}")
         return self
 
 

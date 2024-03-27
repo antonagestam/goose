@@ -5,7 +5,6 @@ from collections.abc import Iterator
 from collections.abc import Mapping
 from collections.abc import Sequence
 from itertools import chain
-from pathlib import Path
 from typing import Final
 from typing import TypeAlias
 
@@ -58,21 +57,6 @@ class Scheduler:
             # If we're at capacity, don't schedule more.
             if len(self._running_units) >= self._max_running:
                 return
-
-            # Check if pre-requisites are fulfilled.
-            for dependency in unit.hook.after:
-                # Track files for which the dependency has finished.
-                covered_files = set[Path]()
-                for finished_unit in self._results:
-                    if finished_unit.hook.id != dependency:
-                        continue
-                    covered_files.update(finished_unit.targets)
-                    if unit.targets <= covered_files:
-                        break
-                else:
-                    # If there was no break, the dependency is not fulfilled,
-                    # and the unit cannot yet be scheduled.
-                    continue
 
             # If no other task running, start.
             if not self._running_units:
