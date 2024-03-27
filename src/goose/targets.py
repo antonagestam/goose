@@ -1,11 +1,13 @@
 import asyncio
 import asyncio.subprocess
 import enum
+import re
 from collections.abc import AsyncIterator
 from collections.abc import Iterator
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Final
 from typing import assert_never
 
 # todo: address liability
@@ -68,10 +70,13 @@ async def _git_file_list(selector: Selector) -> AsyncIterator[Path]:
     await process.wait()
 
 
+_builtin_excludes: Final = (re.compile(r"^\.goose/.*"),)
+
+
 async def get_targets(config: Config, selector: Selector) -> tuple[Target, ...]:
     targets = []
     async for path in _git_file_list(selector):
-        if path_matches_patterns(path, config.exclude):
+        if path_matches_patterns(path, (*config.exclude, *_builtin_excludes)):
             continue
         targets.append(
             Target(

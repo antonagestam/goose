@@ -1,8 +1,4 @@
 version: 0
-
-exclude:
-  - ^\.goose/.*
-
 environments:
   - id: type-check
     ecosystem:

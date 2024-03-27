@@ -40,9 +40,6 @@ Create a `goose.yaml` file in your repository root.
 ```yaml
 version: 0
 
-exclude:
-  - ^\.goose/.*
-
 environments:
   - id: python
     ecosystem:
@@ -74,7 +71,7 @@ $ python -m goose run --select=all
 Then add the configuration and lock files to git.
 
 ```sh
-$ git add goose.yaml .goose
+$ git add goose.yaml .goose
 $ git commit -m 'Add goose configuration'
 ```
 
@@ -99,9 +96,6 @@ Goose currently supports Python and Node environments, here's an example using
 
 ```yaml
 version: 0
-
-exclude:
-  - ^\.goose/.*
 
 environments:
   - id: node
@@ -133,9 +127,6 @@ enable this you set `read_only: true` in hook configuration.
 
 ```yaml
 version: 0
-
-exclude:
-  - ^\.goose/.*
 
 environments:
   - id: python
@@ -192,9 +183,6 @@ this hook).
 
 ```yaml
 version: 0
-
-exclude:
-  - ^\.goose/.*
 
 environments:
   - id: mypy
