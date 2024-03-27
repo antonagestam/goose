@@ -178,7 +178,6 @@ async def run(
         async for _ in scheduler.until_complete():
             pass
 
-
     if any(
         unit_state is RunResult.error
         for units in scheduler.state().values()
