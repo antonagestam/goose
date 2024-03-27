@@ -26,7 +26,6 @@ from .environment import NeedsFreeze
 from .environment import prepare_environment
 from .orphan_environments import probe_orphan_environments
 from .scheduler import Scheduler
-from .scheduler import exit_code
 from .targets import Selector
 from .targets import get_targets
 
@@ -179,7 +178,16 @@ async def run(
         async for _ in scheduler.until_complete():
             pass
 
-    sys.exit(exit_code(scheduler.state()))
+
+    if any(
+        unit_state is RunResult.error
+        for units in scheduler.state().values()
+        for unit_state in units.values()
+    ):
+        console.print("Some hooks errored", style="red")
+        sys.exit(1)
+
+    console.print("All ok!", style="green")
 
 
 if __name__ == "__main__":

@@ -137,15 +137,3 @@ class Scheduler:
             hook: {unit: self._unit_state(unit) for unit in units}
             for hook, units in self._units.items()
         }
-
-
-def exit_code(state: SchedulerState) -> int:
-    return (
-        1
-        if any(
-            unit_state is RunResult.error
-            for units in state.values()
-            for unit_state in units.values()
-        )
-        else 0
-    )
