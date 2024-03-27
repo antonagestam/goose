@@ -10,6 +10,7 @@ from typing import TypeAlias
 from typing import assert_never
 
 import typer
+from rich.console import Console
 from rich.live import Live
 from rich.panel import Panel
 from rich.spinner import Spinner
@@ -21,6 +22,7 @@ from goose.config import HookConfig
 
 from .asyncio import asyncio_entrypoint
 from .context import gather_context
+from .environment import NeedsFreeze
 from .environment import prepare_environment
 from .orphan_environments import probe_orphan_environments
 from .scheduler import Scheduler
@@ -140,10 +142,8 @@ async def run(
     delete_orphan_environments: bool = False,
     select: Selector = typer.Option(default="diff"),
 ) -> None:
+    console = Console(stderr=True)
     ctx = gather_context(config_path)
-
-    # Spawn file delta task to run in background.
-    get_targets_task = asyncio.create_task(get_targets(ctx.config, select))
 
     probe_orphan_environments(ctx, delete=delete_orphan_environments)
 
@@ -151,14 +151,25 @@ async def run(
         asyncio.create_task(prepare_environment(environment))
         for environment in ctx.environments.values()
     ]
+    done, pending = await asyncio.wait(
+        prepare_tasks,
+        return_when=asyncio.FIRST_EXCEPTION,
+    )
+    for task in done:
+        try:
+            task.result()
+        except NeedsFreeze:
+            console.print(
+                "Missing lock files, run `goose upgrade` first.",
+                style="red",
+            )
+            sys.exit(1)
 
-    # fixme: Should allow starting hooks before all environments are ready.
-    await asyncio.gather(*prepare_tasks)
     print("All environments ready", file=sys.stderr)
 
     scheduler = Scheduler(
         context=ctx,
-        targets=await get_targets_task,
+        targets=await get_targets(ctx.config, select),
         selected_hook=selected_hook,
     )
 

@@ -22,6 +22,9 @@ from .manifest import check_lock_files
 from .manifest import read_manifest
 
 
+class NeedsFreeze(Exception): ...
+
+
 class InitialStage(enum.Enum):
     new = "new"
     bootstrapped = "bootstrapped"
@@ -223,10 +226,13 @@ async def prepare_environment(
             file=sys.stderr,
         )
 
-    if upgrade or environment.check_should_freeze():
+    if upgrade:
         print(f"{log_prefix}Freezing dependencies ...", file=sys.stderr)
         await environment.freeze()
         print(f"{log_prefix}Freezing done.")
+    elif environment.check_should_freeze():
+        print(f"{log_prefix}Missing lock files.", file=sys.stderr)
+        raise NeedsFreeze
     else:
         print(f"{log_prefix}Found existing lock files up-to-date.", file=sys.stderr)
 
