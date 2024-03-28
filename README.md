@@ -2,11 +2,15 @@
 
 <p align=center>A <i>picky</i> and <i>eager</i> <a href=https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks>Git hook</a> runner.</p>
 
+- Reproducible builds.
+- Near-optimal parallelism.
+- Small file-system footprint.
+
 ### Features
 
 - Smart parallelism schedules hooks across CPUs while avoiding concurrent writes.
 - Deterministic environments by using ecosystem-specific lock files.
-- Share environments across hooks.
+- Environments are shared across hooks.
 - Self-contained hook definitions makes sure there's no need to push tool-specific
   configuration upstream, or to create elaborate repository mirroring schemes.
 
