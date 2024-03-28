@@ -1,4 +1,4 @@
-<h1 align=center>goose 🦆🧪💻</h1>
+<h1 align=center>goose<br>🦆🧪💻</h1>
 
 <p align=center>A <i>picky</i> and <i>eager</i> <a href=https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks>Git hook</a> runner.</p>
 
@@ -35,7 +35,7 @@ it contains to produce identical environments for hooks to run in.
 
 ## Usage
 
-Create a `goose.yaml` file in your repository root.
+Create a `goose.yaml` file in the repository root.
 
 ```yaml
 environments:
@@ -60,19 +60,19 @@ hooks:
     types: [python]
 ```
 
-Generate lock files and setup environments.
+Bootstrap environments, generate lock files, and install dependencies.
 
 ```sh
 $ python -m goose upgrade
 ```
 
-Run the new hooks over all files.
+Run all hooks over all files.
 
 ```sh
 $ python -m goose run --select=all
 ```
 
-Then add the configuration and lock files to git.
+Commit configuration and lock files.
 
 ```sh
 $ git add goose.yaml .goose
