@@ -62,7 +62,13 @@ hooks:
     types: [python]
 ```
 
-Make an initial run over all files in the repository.
+Generate lock files and setup environments.
+
+```sh
+$ python -m goose upgrade
+```
+
+Run the new hooks over all files.
 
 ```sh
 $ python -m goose run --select=all
