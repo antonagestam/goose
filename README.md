@@ -11,8 +11,8 @@
 - Smart parallelism schedules hooks across CPUs while avoiding concurrent writes.
 - Deterministic environments by using ecosystem-specific lock files.
 - Environments are shared across hooks.
-- Self-contained hook definitions makes sure there's no need to push tool-specific
-  configuration upstream, or to create elaborate repository mirroring schemes.
+- Self-contained definitions means there's no need to push tool-specific
+  configuration upstream, or to maintain brittle mirroring schemes.
 
 ### Parallelism
 
