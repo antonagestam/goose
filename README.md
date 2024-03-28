@@ -219,6 +219,10 @@ hooks:
 - [x] Only changed files
 - [x] Run on all files
 - [ ] Git hook installation
+- [ ] Proper hook integration. There's some complexity in figuring out which delta to run on.
+  - In pre-push. How do we figure out what to run on without assuming what the default branch/target branch is ...
+  - In pre-commit.
+  - When invoked in a dev env (although I think pre-commit just runs on whatever is staged ...).
 - [x] Run single hook
 - [x] Exit 0 on fail
 - [ ] Write output to buffers, dump to stdout/err on error only
