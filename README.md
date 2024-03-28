@@ -208,27 +208,12 @@ hooks:
 
 ### Todo
 
-- [x] Pass filenames
-- [x] Configurably do not pass filenames
-- [x] File types
-- [x] Global exclude patterns
-- [x] Hook level exclude patterns
-- [x] Hook parallelism
-  - Within hook
-  - Across hooks
-- [x] Only changed files
-- [x] Run on all files
 - [ ] Git hook installation
 - [ ] Proper hook integration. There's some complexity in figuring out which delta to run on.
   - In pre-push. How do we figure out what to run on without assuming what the default branch/target branch is ...
   - In pre-commit.
   - When invoked in a dev env (although I think pre-commit just runs on whatever is staged ...).
-- [x] Run single hook
-- [x] Exit 0 on fail
 - [ ] Write output to buffers, dump to stdout/err on error only
-- [x] Rich-based visualization of running units as table
-- [x] Disable fancy output when not a TTY (`if sys.stdout.isatty(): ...`)
-- [x] Flag for disabling freezing, and instead error out if lock files are out of sync.
       In CI, we don't want to be silently overwriting lock files.
 - [ ] `until_complete()` could be improved to generate _type_ of event, such as
       "spawned", "finished". In non-tty, this could be used to print unfancy text
@@ -236,5 +221,4 @@ hooks:
 - [ ] ⚠️ Error on changed files.
   - Need to capture this locally per unit. Gather state of all targets before-hand and
     after each executed unit. Will be interesting for performance.
-- [x] Exclude lock file path implicitly.
 - [ ] Option to print git diff on failure.
