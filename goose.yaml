@@ -1,4 +1,3 @@
-version: 0
 environments:
   - id: type-check
     ecosystem:

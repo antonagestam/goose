@@ -43,7 +43,6 @@ class HookConfig(BaseModel):
 
 @final
 class Config(BaseModel):
-    version: Literal[0]
     environments: tuple[EnvironmentConfig, ...]
     hooks: tuple[HookConfig, ...]
     exclude: tuple[Pattern, ...] = ()

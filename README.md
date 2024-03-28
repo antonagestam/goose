@@ -38,8 +38,6 @@ it contains to produce identical environments for hooks to run in.
 Create a `goose.yaml` file in your repository root.
 
 ```yaml
-version: 0
-
 environments:
   - id: python
     ecosystem:
@@ -101,8 +99,6 @@ Goose currently supports Python and Node environments, here's an example using
 [Prettier]: https://prettier.io/
 
 ```yaml
-version: 0
-
 environments:
   - id: node
     ecosystem:
@@ -132,8 +128,6 @@ because they can inspect overlapping sets of files simultaneously as other tools
 enable this you set `read_only: true` in hook configuration.
 
 ```yaml
-version: 0
-
 environments:
   - id: python
     ecosystem:
@@ -188,8 +182,6 @@ filenames to a hook (and as a consequence, also not spawn multiple parallel jobs
 this hook).
 
 ```yaml
-version: 0
-
 environments:
   - id: mypy
     ecosystem:
