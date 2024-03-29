@@ -218,3 +218,8 @@ hooks:
   - Need to capture this locally per unit. Gather state of all targets before-hand and
     after each executed unit. Will be interesting for performance.
 - [ ] Option to print git diff on failure.
+- [ ] Weigh file chunk distribution based on previous runs.
+  - Store score in root envs directory.
+  - Use something like 50% from last value.
+  - stored = last run * .5 + existing *.5
+  - 
