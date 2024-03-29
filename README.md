@@ -3,7 +3,7 @@
 <p align=center>A <i>picky</i> and <i>eager</i> <a href=https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks>Git hook</a> runner.</p>
 
 - Reproducible builds.
-- Near-optimal parallelism.
+- Dynamic parallelism.
 - Small file-system footprint.
 
 ### Features
