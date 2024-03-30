@@ -223,3 +223,4 @@ hooks:
   - Use something like 50% from last value.
   - stored = last run * .5 + existing *.5
   - 
+- [ ] Generate default id from command and args.
