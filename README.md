@@ -11,8 +11,8 @@
 - Smart parallelism schedules hooks across CPUs while avoiding concurrent writes.
 - Deterministic environments by using ecosystem-specific lock files.
 - Environments are shared across hooks.
-- Self-contained definitions means there's no need to push tool-specific
-  configuration upstream, or to maintain brittle mirroring schemes.
+- Self-contained definitions means there's no need to push tool-specific configuration
+  upstream, or to maintain brittle mirroring schemes.
 
 ### Parallelism
 
@@ -205,12 +205,15 @@ hooks:
 ### Todo
 
 - [ ] Git hook installation
-- [ ] Proper hook integration. There's some complexity in figuring out which delta to run on.
-  - In pre-push. How do we figure out what to run on without assuming what the default branch/target branch is ...
+- [ ] Proper hook integration. There's some complexity in figuring out which delta to
+      run on.
+  - In pre-push. How do we figure out what to run on without assuming what the default
+    branch/target branch is ...
   - In pre-commit.
-  - When invoked in a dev env (although I think pre-commit just runs on whatever is staged ...).
-- [ ] Write output to buffers, dump to stdout/err on error only
-      In CI, we don't want to be silently overwriting lock files.
+  - When invoked in a dev env (although I think pre-commit just runs on whatever is
+    staged ...).
+- [ ] Write output to buffers, dump to stdout/err on error only In CI, we don't want to
+      be silently overwriting lock files.
 - [ ] `until_complete()` could be improved to generate _type_ of event, such as
       "spawned", "finished". In non-tty, this could be used to print unfancy text
       output.
@@ -221,6 +224,7 @@ hooks:
 - [ ] Weigh file chunk distribution based on previous runs.
   - Store score in root envs directory.
   - Use something like 50% from last value.
-  - stored = last run * .5 + existing *.5
-  - 
+    ```
+    stored = last run _ .5 + existing _.5
+    ```
 - [ ] Generate default id from command and args.
