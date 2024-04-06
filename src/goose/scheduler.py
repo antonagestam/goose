@@ -1,7 +1,6 @@
 import asyncio
 import os
 from collections.abc import AsyncIterator
-from collections.abc import Iterator
 from collections.abc import Mapping
 from collections.abc import Sequence
 from itertools import chain
@@ -47,12 +46,12 @@ class Scheduler:
         self._running_units: Final[dict[ExecutableUnit, asyncio.Task[RunResult]]] = {}
         self._results: Final[dict[ExecutableUnit, RunResult]] = {}
 
-    def _schedule_unit(self, unit: ExecutableUnit) -> None:
+    async def _schedule_unit(self, unit: ExecutableUnit) -> None:
         self._remaining_units.remove(unit)
         environment = self._context.environments[unit.hook.environment]
-        self._running_units[unit] = environment.run(unit)
+        self._running_units[unit] = asyncio.Task(environment.run(unit))
 
-    def _schedule_max(self) -> Iterator[None]:
+    async def _schedule_max(self) -> AsyncIterator[None]:
         for unit in tuple(self._remaining_units):
             # If we're at capacity, don't schedule more.
             if len(self._running_units) >= self._max_running:
@@ -60,7 +59,7 @@ class Scheduler:
 
             # If no other task running, start.
             if not self._running_units:
-                self._schedule_unit(unit)
+                await self._schedule_unit(unit)
                 yield
                 continue
 
@@ -69,7 +68,7 @@ class Scheduler:
                 chain(*(unit.targets for unit in self._running_units))
             )
             if not unit.targets & running_file_set:
-                self._schedule_unit(unit)
+                await self._schedule_unit(unit)
                 yield
                 continue
 
@@ -77,7 +76,7 @@ class Scheduler:
             if unit.hook.read_only and all(
                 other_unit.hook.read_only for other_unit in self._running_units
             ):
-                self._schedule_unit(unit)
+                await self._schedule_unit(unit)
                 yield
                 continue
 
@@ -110,7 +109,7 @@ class Scheduler:
         while self._remaining_units:
             # Do a single loop over remaining tasks, and schedule as many as
             # possible.
-            for _ in self._schedule_max():
+            async for _ in self._schedule_max():
                 yield
 
             if not self._remaining_units:

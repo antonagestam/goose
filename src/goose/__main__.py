@@ -73,6 +73,8 @@ def format_unit_state(
             return Text("[✓]", style="green")
         case RunResult.error:
             return Text("[✗]", style="red")
+        case RunResult.modified:
+            return Text("[✎]", style="red")
         case no_match:
             assert_never(no_match)
 
@@ -133,6 +135,28 @@ async def display_live_table(scheduler: Scheduler) -> None:
             live.update(next(live_table), refresh=True)
 
 
+def print_summary(console: Console, scheduler: Scheduler) -> None:
+    any_error = False
+    any_modified = False
+    for units in scheduler.state().values():
+        for unit_state in units.values():
+            if unit_state is RunResult.error:
+                any_error = True
+            elif unit_state is RunResult.modified:
+                any_modified = True
+        if any_error and any_modified:
+            break
+
+    if any_error:
+        console.print("Some hooks errored.", style="red")
+    if any_modified:
+        console.print("Some hooks made changes.", style="red")
+    if any_error or any_modified:
+        sys.exit(1)
+
+    console.print("All ok!", style="green")
+
+
 @cli.command()
 @asyncio_entrypoint
 async def run(
@@ -178,15 +202,7 @@ async def run(
         async for _ in scheduler.until_complete():
             pass
 
-    if any(
-        unit_state is RunResult.error
-        for units in scheduler.state().values()
-        for unit_state in units.values()
-    ):
-        console.print("Some hooks errored", style="red")
-        sys.exit(1)
-
-    console.print("All ok!", style="green")
+    print_summary(console, scheduler)
 
 
 if __name__ == "__main__":

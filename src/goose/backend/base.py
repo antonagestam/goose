@@ -42,6 +42,7 @@ class Sync(Protocol):
 class RunResult(enum.Enum):
     ok = enum.auto()
     error = enum.auto()
+    modified = enum.auto()
 
 
 class Run(Protocol):

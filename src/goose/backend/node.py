@@ -17,9 +17,9 @@ from goose.config import EnvironmentConfig
 from goose.executable_unit import ExecutableUnit
 from goose.manifest import build_manifest
 from goose.manifest import write_manifest
+from goose.process import stream_both
+from goose.process import system_python
 
-from ._process import stream_both
-from ._process import system_python
 from .base import Backend
 from .base import RunResult
 

@@ -1,4 +1,3 @@
-import asyncio
 import enum
 import os
 import sys
@@ -9,6 +8,8 @@ from typing import assert_never
 from typing import final
 
 from pydantic import RootModel
+
+from goose.git.status import get_git_status
 
 from ._utils.pydantic import BaseModel
 from .backend.base import RunResult
@@ -183,14 +184,25 @@ class Environment:
         )
         write_state(self._path, self.state)
 
-    def run(self, unit: ExecutableUnit) -> asyncio.Task[RunResult]:
-        return asyncio.create_task(
-            self._backend.run(
-                env_path=self._path,
-                config=self.config,
-                unit=unit,
-            )
+    async def run(self, unit: ExecutableUnit) -> RunResult:
+        coroutine = self._backend.run(
+            env_path=self._path,
+            config=self.config,
+            unit=unit,
         )
+
+        # We don't track modifications for read-only hooks.
+        if unit.hook.read_only:
+            return await coroutine
+
+        status_prior = await get_git_status(unit.targets)
+        result = await coroutine
+        if result is RunResult.error:
+            return result
+        status_posterior = await get_git_status(unit.targets)
+        if status_prior != status_posterior:
+            return RunResult.modified
+        return result
 
 
 def build_environments(

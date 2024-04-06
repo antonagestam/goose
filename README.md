@@ -217,7 +217,7 @@ hooks:
 - [ ] `until_complete()` could be improved to generate _type_ of event, such as
       "spawned", "finished". In non-tty, this could be used to print unfancy text
       output.
-- [ ] ⚠️ Error on changed files.
+- [x] ⚠️ Error on changed files.
   - Need to capture this locally per unit. Gather state of all targets before-hand and
     after each executed unit. Will be interesting for performance.
 - [ ] Option to print git diff on failure.
@@ -227,4 +227,4 @@ hooks:
     ```
     stored = last run _ .5 + existing _.5
     ```
-- [ ] Generate default id from command and args.
+- [ ] Generate default id from command and args (simplify most configs).

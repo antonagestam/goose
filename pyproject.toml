@@ -107,6 +107,8 @@ extend-ignore = [
   "SIM300",
   # Not yet supported in mypy.
   "UP040",
+  # Bad advise.
+  "PLR0911",
 ]
 
 [tool.ruff.lint.isort]

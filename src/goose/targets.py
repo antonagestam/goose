@@ -13,10 +13,12 @@ from typing import assert_never
 # todo: address liability
 from identify.identify import tags_from_filename
 
-from .backend._process import stream_out
+from goose.process import stream_out
+
 from .config import Config
 from .config import HookConfig
 from .filter import path_matches_patterns
+from .git.shared import nil_split
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -25,16 +27,14 @@ class Target:
     tags: frozenset[str]
 
 
-def _split_git_path_line(paths: bytes) -> Iterator[Path]:
-    for path in paths.strip().split(b"\x00"):
-        if not path:
-            continue
-        yield Path(path.decode())
-
-
 class Selector(enum.Enum):
     all = "all"
     diff = "diff"
+
+
+def _split_git_path_line(paths: bytes) -> Iterator[Path]:
+    for part in nil_split(paths):
+        yield Path(part)
 
 
 async def _git_file_list(selector: Selector) -> AsyncIterator[Path]:
