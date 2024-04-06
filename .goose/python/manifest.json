@@ -1,1 +1,1 @@
-{"source_dependencies":["pre-commit-hooks","ruff"],"lock_files":[{"path":"requirements.txt","checksum":"sha256:89c4d3e787b89cd0990d9ed2bf0088ad6415e3415d1a0245629b4a7e5ac52128"}],"checksum":"sha256:5423284e66171e874c1734d603c2f09179b4ae10236e407ee38939537fa50b92"}
+{"source_dependencies":["pre-commit-hooks","ruff"],"lock_files":[{"path":"requirements.txt","checksum":"sha256:412a6739636f2dfb629ff50ed4405cc8df144fac987c104089b3f0a985ac53eb"}],"checksum":"sha256:c55533e128692357c8cc9e501647ac4ec541bb0580bbe1c704c06f2cd8525ca9"}
