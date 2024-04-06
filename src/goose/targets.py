@@ -59,7 +59,7 @@ async def _git_file_list(selector: Selector) -> AsyncIterator[Path]:
     )
     assert process.stdout is not None
     assert process.stderr is not None
-    stream_stderr = asyncio.create_task(stream_out(b"[stderr]", process.stderr))
+    stream_stderr = asyncio.create_task(stream_out("[stderr]", process.stderr))
     while not process.stdout.at_eof():
         line = await process.stdout.readline()
         if not line:
