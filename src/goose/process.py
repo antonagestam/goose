@@ -8,20 +8,19 @@ def system_python() -> Path:
 
 
 async def stream_out(
-    prefix: bytes,
+    prefix: str,
     stream: asyncio.StreamReader,
 ) -> None:
     while not stream.at_eof():
         line = await stream.readline()
         if not line:
             continue
-        sys.stderr.buffer.write(prefix)
-        sys.stderr.buffer.write(line)
+        print(prefix, line.decode(), end="", file=sys.stderr)
 
 
 async def stream_both(process: asyncio.subprocess.Process) -> None:
     assert process.stdout is not None
     assert process.stderr is not None
-    stream_stdout = asyncio.create_task(stream_out(b"[stdout] ", process.stdout))
-    stream_stderr = asyncio.create_task(stream_out(b"[stderr] ", process.stderr))
+    stream_stdout = asyncio.create_task(stream_out("[stdout]", process.stdout))
+    stream_stderr = asyncio.create_task(stream_out("[stderr]", process.stderr))
     await asyncio.gather(stream_stdout, stream_stderr)
