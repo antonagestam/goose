@@ -2,38 +2,23 @@ target-version = "py312"
 
 [lint]
 extend-select = [
-  # bugbear
-  "B",
-  # comprehensions
-  "C4",
-  # mccabe
-  "C90",
-  # bandit
-  "S",
-  # blind exception
+  "B",  # bugbear
+  "C4",  # comprehensions
+  "C90",  # mccabe
+  "S",  # bandit
   # Bare excepts are caught without this, but this also catches `except Exception: ...`.
-  "BLE",
-  # builtins
-  "A",
-  # Enforce valid noqa comments.
-  "RUF100",
-  # isort
-  "I",
-  # pycodestyle
-  "W",
-  # pyupgrade
-  "UP",
-  # debugger
-  "T10",
-  # quotes
-  "Q",
-  # simplify
-  "SIM",
-  # tidy imports
+  "BLE",  # blind exception
+  "A",  # builtins
+  "RUF100",  # Enforce valid noqa comments.
+  "I",  # isort
+  "W",  # pycodestyle
+  "UP",  # pyupgrade
+  "T10",  # debugger
+  "Q",  # quotes
+  "SIM",  # simplify
   # We use this to only outlaw relative _parent_ imports, other relative imports are OK.
-  "TID",
-  # Pylint
-  "PL",
+  "TID",  # tidy imports
+  "PL",  # Pylint
 ]
 extend-ignore = [
   # There's no reason to outlaw asserts.
@@ -44,7 +29,7 @@ extend-ignore = [
   "E501",
   # Allow function calls in argument defaults.
   "B008",
-  # Disagree.
+  # Bad advise.
   "SIM105",
   # "Yoda conditions are discouraged", this is dangerous to apply, as it
   # destroys some cases that are designed to test bi-directional equality.
