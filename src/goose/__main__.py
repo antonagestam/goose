@@ -26,6 +26,8 @@ from .environment import NeedsFreeze
 from .environment import prepare_environment
 from .orphan_environments import probe_orphan_environments
 from .scheduler import Scheduler
+from .scheduler import UnitFinished
+from .scheduler import UnitScheduled
 from .targets import Selector
 from .targets import get_targets
 
@@ -199,8 +201,13 @@ async def run(
     if sys.stdout.isatty():
         await display_live_table(scheduler)
     else:
-        async for _ in scheduler.until_complete():
-            pass
+        async for event in scheduler.until_complete():
+            if isinstance(event, UnitScheduled):
+                print(f"[{event.unit.hook.id}] Unit scheduled", file=sys.stderr)
+            elif isinstance(event, UnitFinished):
+                print(f"[{event.unit.hook.id}] Unit finished", file=sys.stderr)
+            else:
+                assert_never(event)
 
     print_summary(console, scheduler)
 
