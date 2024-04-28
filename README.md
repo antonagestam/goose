@@ -209,7 +209,7 @@ hooks:
       run on.
   - In pre-push. How do we figure out what to run on without assuming what the default
     branch/target branch is ...
-  - In pre-commit.
+  - In pre-commit -> must only evaluate staged files, not unstaged?
   - When invoked in a dev env (although I think pre-commit just runs on whatever is
     staged ...).
 - [ ] Write output to buffers, dump to stdout/err on error only.

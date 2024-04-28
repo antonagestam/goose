@@ -220,5 +220,28 @@ async def run(
     print_summary(console, scheduler)
 
 
+template = """\
+#!/usr/bin/env bash
+set -euo pipefail
+python -m goose run '--config={config_path}'
+"""
+
+
+@cli.command()
+@asyncio_entrypoint
+async def git_hook(
+    hook: str,
+    config_path: ConfigOption = default_config,
+) -> None:
+    # fixme: typer argument
+    assert hook in ("pre-commit", "pre-push")
+    hooks_path = Path(".git/hooks")
+    assert hooks_path.exists()
+    assert hooks_path.is_dir()
+    hook_path = hooks_path / hook
+    hook_path.write_text(template.format(config_path=str(config_path)))
+    hook_path.chmod(0o755)
+
+
 if __name__ == "__main__":
     cli()
