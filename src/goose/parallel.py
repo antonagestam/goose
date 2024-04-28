@@ -24,7 +24,7 @@ def hook_as_executable_units(
 
     # Hook is not parameterized, yield single unit with empty file set.
     if not target_files:
-        yield ExecutableUnit(hook=hook)
+        yield ExecutableUnit(id=0, hook=hook)
         return
 
     # fixme: remove
@@ -33,5 +33,9 @@ def hook_as_executable_units(
     # Distribute target files over one executable unit per core.
     process_count = os.cpu_count() or 2
     batch_size = math.ceil(len(target_files) / process_count)
-    for file_batch in batched(target_files, batch_size):
-        yield ExecutableUnit(hook=hook, targets=frozenset(file_batch))
+    for unit_id, file_batch in enumerate(batched(target_files, batch_size)):
+        yield ExecutableUnit(
+            id=unit_id,
+            hook=hook,
+            targets=frozenset(file_batch),
+        )

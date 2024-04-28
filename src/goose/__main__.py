@@ -1,5 +1,6 @@
 import asyncio
 import sys
+import time
 from collections.abc import Collection
 from collections.abc import Iterator
 from pathlib import Path
@@ -202,10 +203,17 @@ async def run(
         await display_live_table(scheduler)
     else:
         async for event in scheduler.until_complete():
+            t = time.time_ns()
             if isinstance(event, UnitScheduled):
-                print(f"[{event.unit.hook.id}] Unit scheduled", file=sys.stderr)
+                print(
+                    f"[{event.unit.hook.id}@{event.unit.id}] [{t}] Unit scheduled",
+                    file=sys.stderr,
+                )
             elif isinstance(event, UnitFinished):
-                print(f"[{event.unit.hook.id}] Unit finished", file=sys.stderr)
+                print(
+                    f"[{event.unit.hook.id}@{event.unit.id}] [{t}] Unit finished: {event.result.name}",
+                    file=sys.stderr,
+                )
             else:
                 assert_never(event)
 
