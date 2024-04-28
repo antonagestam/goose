@@ -21,7 +21,7 @@ class Context:
 def gather_context(
     config_path: Path,
 ) -> Context:
-    lock_files_path = Path("./.goose")
+    lock_files_path = Path("./.goose").resolve()
     lock_files_path.mkdir(exist_ok=True)
     config = load_config(config_path)
     environments_path = get_env_path()

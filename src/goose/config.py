@@ -55,6 +55,18 @@ class Config(BaseModel):
                 raise ValueError(f"Unknown hook environment: {hook.environment!r}")
         return self
 
+    @model_validator(mode="after")  # type: ignore[misc]
+    def validate_hook_ids_unique(self) -> Self:
+        if len({hook.id for hook in self.hooks}) != len(self.hooks):
+            raise ValueError("Hook ids must be unique")
+        return self
+
+    @model_validator(mode="after")  # type: ignore[misc]
+    def validate_environment_ids_unique(self) -> Self:
+        if len({env.id for env in self.environments}) != len(self.environments):
+            raise ValueError("Environment ids must be unique")
+        return self
+
 
 def load_config(path: Path) -> Config:
     with path.open("rb") as fd:
