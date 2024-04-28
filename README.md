@@ -218,3 +218,7 @@ hooks:
       output.
 - [ ] Option to print git diff on failure.
 - [ ] Generate default id from command and args (simplify most configs).
+- [ ] Support executing in remote target.
+  - This config must be machine-specific, i.e. not checked into version control.
+  - Just configure host. Everything else mandated to be configured in ssh config.
+  - Working directory on remote configurable.
