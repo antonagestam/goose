@@ -1,9 +1,9 @@
+> [!NOTE]
+> This project is in its infancy, expect a broken experience.
+
 <h1 align=center>goose<br>🦆🧪💻</h1>
 
 <p align=center>A <i>picky</i> and <i>eager</i> <a href=https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks>Git hook</a> runner.</p>
-
-> [!NOTE]
-> This project is in its infancy, expect a broken experience.
 
 - Reproducible builds.
 - Dynamic parallelism.
