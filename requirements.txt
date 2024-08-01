@@ -28,9 +28,9 @@ nodeenv==1.9.1 \
     --hash=sha256:6ec12890a2dab7946721edbfbcd91f3319c6ccc9aec47be7c7e6b7011ee6645f \
     --hash=sha256:ba11c9782d29c27c70ffbdda2d7415098754709be8a7056d79a737cd901155c9
     # via goose (pyproject.toml)
-pydantic==2.8.0 \
-    --hash=sha256:d970ffb9d030b710795878940bd0489842c638e7252fc4a19c3ae2f7da4d6141 \
-    --hash=sha256:ead4f3a1e92386a734ca1411cb25d94147cf8778ed5be6b56749047676d6364e
+pydantic==2.8.2 \
+    --hash=sha256:6f62c13d067b0755ad1c21a34bdd06c0c12625a22b0fc09c6b149816604f7c2a \
+    --hash=sha256:73ee9fddd406dc318b885c7a2eab8a6472b68b8fb5ba8150949fc3db939f23c8
     # via goose (pyproject.toml)
 pydantic-core==2.20.0 \
     --hash=sha256:03aceaf6a5adaad3bec2233edc5a7905026553916615888e53154807e404545c \
