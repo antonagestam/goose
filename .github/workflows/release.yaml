@@ -6,7 +6,7 @@ on:
 
 jobs:
   pypi-build-and-publish:
-    name: Build and publish
+    name: Build and publish Python package to PyPI
     runs-on: ubuntu-latest
     environment:
       name: pypi
@@ -47,6 +47,7 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
 
   ghcr-build-and-publish:
+    name: Build and publish Docker container image to GHCR
     runs-on: ubuntu-latest
     environment:
       name: ghcr
