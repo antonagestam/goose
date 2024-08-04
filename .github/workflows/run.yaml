@@ -1,0 +1,34 @@
+# This is a reusable workflow that's meant to be the canonical way of running goose in
+# Github Actions workflows. See README for an example of how to use this in your
+# workflows.
+
+on:
+  workflow_call: {}
+
+env:
+  PYTHON_VERSION: "3.13"
+  COLUMNS: "120"
+  FORCE_COLOR: "1"
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  goose-run:
+    name: Run goose checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.13
+          cache: pip
+          check-latest: true
+      - name: goose cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/goose
+          key: "${{ runner.os }}-goose-${{ env.PYTHON_VERSION }}-${{ hashFiles('.goose/**/manifest.json') }}"
+          restore-keys: |
+            ${{ runner.os }}-goose-${{ env.PYTHON_VERSION }}
+            ${{ runner.os }}-goose
+      - run: pip install --upgrade git-goose
+      - run: goose run --select=all --delete-orphan-environments
