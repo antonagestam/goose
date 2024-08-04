@@ -1,3 +1,25 @@
+[build-system]
+requires = [
+  "setuptools==71.1.0",
+  "setuptools-scm==8.1.0",
+  "wheel==0.43.0",
+]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+readme = {file = "README.md", content-type = "text/markdown; charset=UTF-8"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = false
+
+[tool.setuptools_scm]
+version_file = "src/goose/_version.py"
+
+
 [project]
 name = "git-goose"
 authors = [
@@ -5,15 +27,15 @@ authors = [
 ]
 description = "A picky and eager Git hook runner."
 license = {text = "BSD 3-Clause"}
-version = "0.0.1"
 requires-python = ">3.12,<3.13"
 classifiers = [
   "Intended Audience :: Developers",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3.12",
+  "Development Status :: 4 - Beta",
   "Typing :: Typed",
 ]
-dynamic = ["readme"]
+dynamic = ["version", "readme"]
 dependencies = [
   "pydantic",
   "PyYAML",
@@ -29,24 +51,12 @@ dependencies = [
 [project.urls]
 "Source Repository" = "https://github.com/antonagestam/goose"
 
-[build-system]
-requires = ["setuptools==70.3.0", "wheel==0.43.0"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools]
-include-package-data = true
-
-[tool.setuptools.dynamic]
-readme = {file = "README.md", content-type = "text/markdown; charset=UTF-8"}
-
-[tool.setuptools.packages.find]
-where = ["src"]
-namespaces = false
 
 [tool.pip-tools]
 generate-hashes = true
 strip-extras = true
 upgrade = true
+
 
 [tool.mypy]
 python_version = 3.12
@@ -72,3 +82,7 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 warn_return_any = true
 warn_unreachable = true
+
+
+[tool.check-manifest]
+ignore = ["src/goose/_version.py"]

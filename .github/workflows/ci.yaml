@@ -35,7 +35,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-goose-3.12
           ${{ runner.os }}-goose
-    - run: python3 -m pip install -r requirements.txt
+    - run: python3 -m pip install --require-hashes --no-dependencies -r requirements.txt
+    - run: python3 -m pip install --no-dependencies .
     - run: time python -X dev -m goose run --select=all --delete-orphan-environments
-      env:
-        PYTHONPATH: src
