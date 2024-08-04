@@ -1,0 +1,10 @@
+# Ignore everything by default
+*
+
+# Include necessary paths
+!src
+!requirements.txt
+!pyproject.toml
+
+# Ignore files nested within included directories
+**/*.pyc

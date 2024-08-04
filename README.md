@@ -16,6 +16,20 @@
 - Dynamic parallelism.
 - Small file-system footprint.
 
+### Installation
+
+#### Docker alias
+
+```sh
+alias goose='docker run --rm -it -v ${PWD}:/wd -v ~/.cache/goose-docker:/home/nonroot/.cache ghcr.io/antonagestam/goose:latest'
+```
+
+#### Via PyPI
+
+```shell
+pip install --require-venv git-goose
+```
+
 ### Features
 
 - Smart parallelism schedules hooks across CPUs while avoiding concurrent writes.
