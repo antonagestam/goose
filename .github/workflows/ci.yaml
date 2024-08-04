@@ -36,6 +36,5 @@ jobs:
           ${{ runner.os }}-goose-3.12
           ${{ runner.os }}-goose
     - run: python3 -m pip install -r requirements.txt
+    - run: python3 -m pip install .
     - run: time python -X dev -m goose run --select=all --delete-orphan-environments
-      env:
-        PYTHONPATH: src
