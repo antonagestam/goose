@@ -5,10 +5,10 @@ environments:
       version: "3.12"
     dependencies:
       - mypy
-      - pydantic==2.6.4
-      - types-pyyaml==6.0.12.20240311
-      - typer==0.10.0
-      - identify==2.5.35
+      - pydantic==2.8.2
+      - types-pyyaml==6.0.12.20240724
+      - typer==0.12.3
+      - identify==2.6.0
       - rich==13.7.1
 
   - id: python
