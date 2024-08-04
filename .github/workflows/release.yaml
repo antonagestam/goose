@@ -25,24 +25,24 @@ jobs:
         run: python3 -m pip install --upgrade build pkginfo
       - name: Build
         run: python3 -m build --sdist --wheel .
-      - name: Verify release version
+      - name: Inspect built wheel version
+        id: inspect-wheel-version
         run: |
-          pkg_info_version=$(
-          python3 <(cat << EOF
+          python3 << 'EOF' >> $GITHUB_OUTPUT
           from pathlib import Path
           from pkginfo import Wheel
-          wheel = Wheel(next(Path("dist").glob("*.whl")))
-          print(wheel.version)
+          [wheel_path] = Path("dist").glob("*.whl")
+          wheel = Wheel(wheel_path)
+          print(f"version={wheel.version}")
           EOF
-          )
-          )
-          if [[ "$pkg_info_version" != "${{ github.event.release.tag_name }}" ]]; then
-            echo "💥 The version of the built wheel doesn't match the release tag."
-            echo
-            echo "Release tag: '${{ github.event.release.tag_name }}'"
-            echo "Packaged version: '$pkg_info_version'"
-            exit 1
-          fi
+      - name: Fail on version mismatch
+        if: ${{ steps.inspect-wheel-version.outputs.version != github.event.release.tag_name }}
+        run: |
+          echo "💥 The version of the built wheel does not match the release tag."
+          echo
+          echo "Release tag: '${{ github.event.release.tag_name }}'"
+          echo "Packaged version: '${{ steps.inspect-wheel-version.outputs.version }}'"
+          exit 1
       - name: Publish
         uses: pypa/gh-action-pypi-publish@release/v1
 
