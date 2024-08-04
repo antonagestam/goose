@@ -21,6 +21,10 @@ jobs:
           key: ${{ runner.os }}-goose-${{ hashFiles('.goose/**/manifest.json') }}
           restore-keys: |
             ${{ runner.os }}-goose
+      - name: Create cache directory
+        run: |
+          mkdir -p ~/.cache/goose-docker
+          chown 1000:1000 ~/.cache/goose-docker
       - name: goose run
         run: >-
           docker run --rm
