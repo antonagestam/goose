@@ -21,6 +21,10 @@ jobs:
           key: ${{ runner.os }}-goose-${{ hashFiles('.goose/**/manifest.json') }}
           restore-keys: |
             ${{ runner.os }}-goose
-      - run: |
-          alias goose='docker run --rm -it -v ${PWD}:/wd -v ~/.cache/goose-docker:/home/nonroot/.cache ghcr.io/antonagestam/goose:${{ inputs.goose-version }}'
-          goose run --select=all --delete-orphan-environments
+      - name: goose run
+        run: >-
+          docker run --rm -it
+          -v ${PWD}:/wd
+          -v ~/.cache/goose-docker:/home/nonroot/.cache
+          ghcr.io/antonagestam/goose:${{ inputs.goose-version }}
+          run --select=all --delete-orphan-environments
