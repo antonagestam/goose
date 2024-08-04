@@ -30,6 +30,22 @@ alias goose='docker run --rm -it -v ${PWD}:/wd -v ~/.cache/goose-docker:/home/no
 pip install --require-venv git-goose
 ```
 
+#### In Github Actions
+
+```yaml
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Static analysis
+    uses: antonagestam/goose/.github/workflows/goose-run.yaml@main
+```
+
 ### Features
 
 - Smart parallelism schedules hooks across CPUs while avoiding concurrent writes.
