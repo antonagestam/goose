@@ -23,7 +23,7 @@ jobs:
             ${{ runner.os }}-goose
       - name: goose run
         run: >-
-          docker run --rm -it
+          docker run --rm
           -v ${PWD}:/wd
           -v ~/.cache/goose-docker:/home/nonroot/.cache
           ghcr.io/antonagestam/goose:${{ inputs.goose-version }}
