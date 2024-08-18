@@ -1,5 +1,7 @@
 # This is a reusable workflow that's meant to be the canonical way of running goose in
-# Github Actions workflows.
+# Github Actions workflows. See README for an example of how to use this in your
+# workflows.
+
 on:
   workflow_call:
     inputs:
@@ -12,23 +14,24 @@ jobs:
   goose-run:
     name: Run goose checks
     runs-on: ubuntu-latest
+    env:
+      cache-directory: ~/.goose-cache
     steps:
       - uses: actions/checkout@v4
       - name: Environment cache
         uses: actions/cache@v4
         with:
-          path: ~/.cache/goose-docker
+          path: ${{ env.cache-directory }}
           key: ${{ runner.os }}-goose-${{ hashFiles('.goose/**/manifest.json') }}
           restore-keys: |
             ${{ runner.os }}-goose
       - name: Create cache directory
         run: |
-          mkdir -p ~/.cache/goose-docker
-          chown 1000:1000 ~/.cache/goose-docker
+          mkdir -p  ${{ env.cache-directory }}
       - name: goose run
         run: >-
           docker run --rm
           -v ${PWD}:/wd
-          -v ~/.cache/goose-docker:/home/nonroot/.cache
+          -v  ${{ env.cache-directory }}:/home/nonroot/.cache
           ghcr.io/antonagestam/goose:${{ inputs.goose-version }}
           run --select=all --delete-orphan-environments
