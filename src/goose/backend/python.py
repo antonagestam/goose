@@ -123,6 +123,7 @@ async def freeze(
                 "--resolver=backtracking",
                 "--no-annotate",
                 "--no-header",
+                "--allow-unsafe",
                 f"--output-file={requirements_txt}",
                 f"{tmp_requirements_in}",
             ),
