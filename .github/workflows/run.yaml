@@ -30,7 +30,7 @@ jobs:
         run: |
           mkdir -p  ${{ env.CACHE_DIR }}
       - name: Debug
-        run:
+        run: |
           stat $CACHE_DIR
           id --user
           id --group
