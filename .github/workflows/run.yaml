@@ -14,25 +14,26 @@ jobs:
   goose-run:
     name: Run goose checks
     runs-on: ubuntu-latest
-    env:
-      cache-directory: ~/.goose-cache
     steps:
+      - name: Set cache directory
+        run: |
+          echo "CACHE_DIR=${XDG_CACHE_HOME:-~/.cache}/goose" >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
       - name: Environment cache
         uses: actions/cache@v4
         with:
-          path: ${{ env.cache-directory }}
+          path: ${{ env.CACHE_DIR }}
           key: ${{ runner.os }}-goose-${{ hashFiles('.goose/**/manifest.json') }}
           restore-keys: |
             ${{ runner.os }}-goose
       - name: Create cache directory
         run: |
-          mkdir -p  ${{ env.cache-directory }}
+          mkdir -p  ${{ env.CACHE_DIR }}
       - name: goose run
         run: >-
           docker run --rm
           -v ${PWD}:/wd
-          -v  ${{ env.cache-directory }}:/home/nonroot/.cache
+          -v  ${{ env.CACHE_DIR }}:/home/nonroot/.cache
           --user $(id --user):$(id --group)
           ghcr.io/antonagestam/goose:${{ inputs.goose-version }}
           run --select=all --delete-orphan-environments
