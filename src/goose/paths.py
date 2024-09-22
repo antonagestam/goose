@@ -18,5 +18,7 @@ def get_env_path() -> Path:
     cwd = Path(os.getcwd()).resolve()
     env_hash = hashlib.sha256(bytes(cwd))
     env_path = base_path / env_hash.hexdigest()
+    print(f"{base_path=}")
+    print(f"{env_path=}")
     env_path.mkdir(exist_ok=True, parents=True)
     return env_path
