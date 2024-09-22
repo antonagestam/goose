@@ -37,7 +37,9 @@ jobs:
           stat $CACHE_DIR
       - name: goose run
         run: >-
-          docker run --rm
+          docker run
+          --rm
+          --pull=always
           -v ${PWD}:/wd
           -v  ${{ env.CACHE_DIR }}:/home/nonroot/.cache
           --user $(id --user):$(id --group)
