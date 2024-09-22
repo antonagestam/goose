@@ -29,6 +29,11 @@ jobs:
       - name: Create cache directory
         run: |
           mkdir -p  ${{ env.CACHE_DIR }}
+      - name: Debug
+        run:
+          stat $CACHE_DIR
+          id --user
+          id --group
       - name: goose run
         run: >-
           docker run --rm
