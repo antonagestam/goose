@@ -42,6 +42,5 @@ jobs:
           --pull=always
           -v ${PWD}:/wd
           -v  ${{ env.CACHE_DIR }}:/home/nonroot/.cache
-          --user $(id --user):$(id --group)
           ghcr.io/antonagestam/goose:${{ inputs.goose-version }}
           run --select=all --delete-orphan-environments
