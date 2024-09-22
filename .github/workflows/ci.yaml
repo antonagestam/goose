@@ -37,4 +37,6 @@ jobs:
           ${{ runner.os }}-goose
     - run: python3 -m pip install --require-hashes --no-dependencies -r requirements.txt
     - run: python3 -m pip install --no-dependencies .
+    # Note: this is important to discover when Dependabot is attempting to break things.
+    - run: python3 -m pip check
     - run: time python -X dev -m goose run --select=all --delete-orphan-environments
