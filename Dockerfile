@@ -34,6 +34,7 @@ FROM python:3.12.5-slim-bullseye AS final
 ARG UID="1000"
 ARG GID="1000"
 ENV PYTHONUNBUFFERED 1
+ENV HOME "/home/nonroot/"
 
 # Install git
 WORKDIR /wd
@@ -50,7 +51,7 @@ RUN addgroup --gid $GID nonroot \
  && mkdir -p /home/nonroot/.cache \
  && chown nonroot:nonroot /home/nonroot/.cache \
  && git config --system safe.directory '*'
-VOLUME "/home/nonroot/.cache"
+VOLUME "$HOME/.cache"
 USER "$UID:$GID"
 
 ENTRYPOINT ["python", "-m", "goose"]
