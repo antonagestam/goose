@@ -17,7 +17,7 @@ jobs:
     steps:
       - name: Set cache directory
         run: |
-          echo "CACHE_DIR=${XDG_CACHE_HOME:-~/.cache}/goose" >> "$GITHUB_ENV"
+          echo "CACHE_DIR=${XDG_CACHE_HOME:-$HOME/.cache}/goose" >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
       - name: Environment cache
         uses: actions/cache@v4
