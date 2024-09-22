@@ -31,9 +31,10 @@ jobs:
           mkdir -p  ${{ env.CACHE_DIR }}
       - name: Debug
         run: |
-          stat $CACHE_DIR
+          echo $XDG_CACHE_HOME
           id --user
           id --group
+          stat $CACHE_DIR
       - name: goose run
         run: >-
           docker run --rm
