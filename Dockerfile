@@ -1,4 +1,4 @@
-FROM python:3.12.5-bullseye AS build
+FROM python:3.12.6-bullseye AS build
 
 ARG RELEASE_VERSION="dev"
 ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_GIT_GOOSE=$RELEASE_VERSION
@@ -29,7 +29,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
  && pip install --no-dependencies /app-src \
  && pip check
 
-FROM python:3.12.5-slim-bullseye AS final
+FROM python:3.12.6-slim-bullseye AS final
 
 ARG UID="1000"
 ARG GID="1000"
