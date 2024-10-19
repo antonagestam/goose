@@ -20,11 +20,16 @@ from rich.table import Table
 from rich.text import Text
 
 from goose.backend.base import RunResult
+from goose.config import EnvironmentId
 from goose.config import HookConfig
 
 from .asyncio import asyncio_entrypoint
 from .context import gather_context
+from .environment import Environment
+from .environment import InitialState
 from .environment import NeedsFreeze
+from .environment import SyncedState
+from .environment import UninitializedState
 from .environment import prepare_environment
 from .orphan_environments import probe_orphan_environments
 from .scheduler import Scheduler
@@ -220,6 +225,52 @@ async def run(
                 assert_never(event)
 
     print_summary(console, scheduler)
+
+
+@cli.command()
+@asyncio_entrypoint
+async def environment(
+    selected_environment: Optional[str] = typer.Argument(default=None),  # noqa
+    config_path: ConfigOption = default_config,
+) -> None:
+    console = Console()
+    error_console = Console(stderr=True)
+    ctx = gather_context(config_path)
+
+    def print_environment(environment: Environment) -> None:
+        console.print(f"{environment.config.id}")
+        console.print(f"  config.ecosystem: {environment.config.ecosystem}")
+        console.print(f"  path: {environment._path}")
+        console.print(f"  lock-files-path: {environment.lock_files_path}")
+
+        state = environment.state
+        if isinstance(state, UninitializedState):
+            console.print("  state: uninitialized")
+        elif isinstance(state, InitialState):
+            console.print("  state: initial")
+            console.print(f"  state.stage: {state.stage.value}")
+            console.print(f"  state.ecosystem: {state.ecosystem}")
+        elif isinstance(state, SyncedState):
+            console.print("  state: synced")
+            console.print(f"  state.stage: {state.stage.value}")
+            console.print(f"  state.ecosystem: {state.ecosystem}")
+            console.print(f"  state.checksum: {state.checksum!r}")
+
+        else:
+            assert_never(state)
+
+    if selected_environment is None:
+        for environment in ctx.environments.values():
+            print_environment(environment)
+        return
+
+    try:
+        environment = ctx.environments[EnvironmentId(selected_environment)]
+    except KeyError:
+        error_console.print("No such environment")
+        raise SystemExit(1) from None
+
+    print_environment(environment)
 
 
 @cli.command()
