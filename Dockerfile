@@ -1,4 +1,4 @@
-FROM python:3.12.6-bullseye AS build
+FROM python:3.13.0-bookworm AS build
 
 ARG RELEASE_VERSION="dev"
 ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_GIT_GOOSE=$RELEASE_VERSION
@@ -6,9 +6,9 @@ ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_GIT_GOOSE=$RELEASE_VERSION
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV PIP_REQUIRE_VIRTUALENV true
-ENV PIP_VERSION 24.1.2
-ENV SETUPTOOLS_VERSION 70.3.0
-ENV WHEEL_VERSION 0.43.0
+ENV PIP_VERSION 24.2
+ENV SETUPTOOLS_VERSION 75.2.0
+ENV WHEEL_VERSION 0.44.0
 # Permanently activate virtualenv.
 ENV PATH="/venv/bin:$PATH"
 
@@ -29,7 +29,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
  && pip install --no-dependencies /app-src \
  && pip check
 
-FROM python:3.12.6-slim-bullseye AS final
+FROM python:3.13.0-slim-bookworm AS final
 
 ARG UID="1000"
 ARG GID="1000"
