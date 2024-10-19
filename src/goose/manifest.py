@@ -13,6 +13,7 @@ from pydantic import ValidationInfo
 from pydantic import field_validator
 
 from ._utils.pydantic import BaseModel
+from .config import EcosystemConfig
 from .config import EnvironmentConfig
 
 
@@ -35,6 +36,7 @@ C = TypeVar("C", bound=Collection)
 
 
 class LockManifest(BaseModel):
+    source_ecosystem: EcosystemConfig
     source_dependencies: tuple[str, ...]
     lock_files: tuple[LockFile, ...]
     checksum: str
@@ -94,6 +96,7 @@ def read_lock_file(lock_files_path: Path, path: Path) -> LockFile:
 
 
 def build_manifest(
+    source_ecosystem: EcosystemConfig,
     source_dependencies: Iterable[str],
     lock_files: Iterable[Path],
     lock_files_path: Path,
@@ -102,6 +105,7 @@ def build_manifest(
         sorted(read_lock_file(lock_files_path, path) for path in lock_files)
     )
     return LockManifest(
+        source_ecosystem=source_ecosystem,
         source_dependencies=tuple(sorted(source_dependencies)),
         lock_files=lock_file_instances,
         checksum=_get_accumulated_checksum(lock_file_instances),
@@ -138,6 +142,9 @@ def check_lock_files(
     try:
         manifest = read_manifest(lock_files_path)
     except FileNotFoundError:
+        return LockFileState.config_manifest_mismatch
+
+    if config.ecosystem != manifest.source_ecosystem:
         return LockFileState.config_manifest_mismatch
 
     if set(config.dependencies) ^ set(manifest.source_dependencies):

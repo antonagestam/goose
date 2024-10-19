@@ -7,7 +7,6 @@ from collections.abc import Sequence
 from itertools import chain
 from typing import Final
 from typing import NamedTuple
-from typing import TypeAlias
 
 from .backend.base import RunResult
 from .config import HookConfig
@@ -26,11 +25,10 @@ class UnitFinished(NamedTuple):
     result: RunResult
 
 
-SchedulerEvent: TypeAlias = UnitScheduled | UnitFinished
-
-
-SchedulerState: TypeAlias = Mapping[
-    HookConfig, Mapping[ExecutableUnit, RunResult | asyncio.Task[RunResult] | None]
+type SchedulerEvent = UnitScheduled | UnitFinished
+type SchedulerState = Mapping[
+    HookConfig,
+    Mapping[ExecutableUnit, RunResult | asyncio.Task[RunResult] | None],
 ]
 
 
