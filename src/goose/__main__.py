@@ -23,6 +23,7 @@ from goose.backend.base import RunResult
 from goose.config import EnvironmentId
 from goose.config import HookConfig
 
+from . import __version__
 from .asyncio import asyncio_entrypoint
 from .context import gather_context
 from .environment import Environment
@@ -268,7 +269,7 @@ async def environment(
         environment = ctx.environments[EnvironmentId(selected_environment)]
     except KeyError:
         error_console.print("No such environment")
-        raise SystemExit(1) from None
+        raise typer.Exit(1) from None
 
     print_environment(environment)
 
@@ -289,7 +290,7 @@ async def select(
         hook = next(hook for hook in ctx.config.hooks if hook.id == selected_hook)
     except StopIteration:
         error_console.print("No such hook.")
-        raise SystemExit(1) from None
+        raise typer.Exit(1) from None
 
     if not hook.parameterize:
         error_console.print(
@@ -327,6 +328,26 @@ async def git_hook(
     hook_path = hooks_path / hook.value
     hook_path.write_text(template.format(config_path=str(config_path)))
     hook_path.chmod(0o755)
+
+
+def version_callback(print_version: bool) -> None:
+    if not print_version:
+        return
+    print(f"goose version {__version__}")
+    raise typer.Exit()
+
+
+@cli.callback()
+def main(
+    version: bool = typer.Option(
+        None,
+        "--version",
+        callback=version_callback,
+        is_eager=True,
+        help="Print version information.",
+    ),
+) -> None:
+    pass
 
 
 if __name__ == "__main__":
