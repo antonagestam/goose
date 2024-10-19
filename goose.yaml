@@ -2,7 +2,7 @@ environments:
   - id: type-check
     ecosystem:
       language: python
-      version: "3.12"
+      version: "3.13"
     dependencies:
       - mypy
       - pydantic==2.8.2
@@ -14,7 +14,7 @@ environments:
   - id: python
     ecosystem:
       language: python
-      version: "3.12"
+      version: "3.13"
     dependencies:
       - ruff
       - pre-commit-hooks
@@ -22,7 +22,7 @@ environments:
   - id: node
     ecosystem:
       language: node
-      version: "21.7.1"
+      version: "23.0.0"
     dependencies:
       - prettier
 

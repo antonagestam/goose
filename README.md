@@ -70,7 +70,7 @@ environments:
   - id: python
     ecosystem:
       language: python
-      version: "3.12"
+      version: "3.13"
     dependencies:
       - ruff
 
@@ -160,7 +160,7 @@ environments:
   - id: python
     ecosystem:
       language: python
-      version: "3.12"
+      version: "3.13"
     dependencies:
       - pre-commit-hooks
 
@@ -214,7 +214,7 @@ environments:
   - id: mypy
     ecosystem:
       language: python
-      version: "3.12"
+      version: "3.13"
     dependencies:
       - mypy
 
