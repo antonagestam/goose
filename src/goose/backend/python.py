@@ -138,6 +138,7 @@ async def freeze(
         raise RuntimeError("Failed freezing dependencies {process.returncode=}")
 
     manifest = build_manifest(
+        source_ecosystem=config.ecosystem,
         source_dependencies=config.dependencies,
         lock_files=(requirements_txt,),
         lock_files_path=lock_files_path,

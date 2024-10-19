@@ -116,6 +116,7 @@ async def freeze(
 
     package_lock_json_path = lock_files_path / "package-lock.json"
     manifest = build_manifest(
+        source_ecosystem=config.ecosystem,
         source_dependencies=config.dependencies,
         lock_files=(
             package_json_path,

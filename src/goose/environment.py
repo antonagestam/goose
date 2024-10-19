@@ -1,5 +1,7 @@
+import asyncio
 import enum
 import os
+import shutil
 import sys
 from collections.abc import Mapping
 from pathlib import Path
@@ -15,6 +17,7 @@ from ._utils.pydantic import BaseModel
 from .backend.base import RunResult
 from .backend.index import load_backend
 from .config import Config
+from .config import EcosystemConfig
 from .config import EnvironmentConfig
 from .config import EnvironmentId
 from .executable_unit import ExecutableUnit
@@ -27,7 +30,6 @@ class NeedsFreeze(Exception): ...
 
 
 class InitialStage(enum.Enum):
-    new = "new"
     bootstrapped = "bootstrapped"
     frozen = "frozen"
 
@@ -39,23 +41,30 @@ class SyncedStage(enum.Enum):
 class SyncedState(BaseModel):
     stage: SyncedStage
     checksum: str
+    ecosystem: EcosystemConfig
 
 
 class InitialState(BaseModel):
     stage: InitialStage
+    ecosystem: EcosystemConfig
 
 
-_PersistedState = RootModel[InitialState | SyncedState]
+class UninitializedState: ...
 
 
-def read_state(env_dir: Path) -> InitialState | SyncedState:
+type State = SyncedState | InitialState | UninitializedState
+
+_PersistedState = RootModel[SyncedState | InitialState]
+
+
+def read_state(env_dir: Path) -> State:
     state_file = env_dir / "goose-state.json"
     if not state_file.exists():
-        return InitialState(stage=InitialStage.new)
+        return UninitializedState()
     return _PersistedState.model_validate_json(state_file.read_bytes()).root
 
 
-def write_state(env_dir: Path, state: InitialState | SyncedState) -> None:
+def write_state(env_dir: Path, state: SyncedState | InitialState) -> None:
     state_file = env_dir / "goose-state.json"
     state_file.write_text(state.model_dump_json())
 
@@ -67,7 +76,7 @@ class Environment:
         config: EnvironmentConfig,
         path: Path,
         lock_files_path: Path,
-        discovered_state: InitialState | SyncedState,
+        discovered_state: State,
     ) -> None:
         self.config: Final = config
         self._backend: Final = load_backend(config.ecosystem)
@@ -80,8 +89,13 @@ class Environment:
     def __repr__(self) -> str:
         return f"Environment(id={self.config.id}, ecosystem={self._backend.ecosystem})"
 
+    def check_should_teardown(self) -> bool:
+        if isinstance(self.state, UninitializedState):
+            return False
+        return self.config.ecosystem != self.state.ecosystem
+
     def check_should_bootstrap(self) -> bool:
-        if self.state.stage is InitialStage.new:
+        if isinstance(self.state, UninitializedState):
             return True
         if not self._path.exists():
             print("State mismatch: environment does not exist")
@@ -153,12 +167,19 @@ class Environment:
         else:
             assert_never(state)
 
+    async def teardown(self) -> None:
+        await asyncio.to_thread(shutil.rmtree, self._path)
+        self.state = UninitializedState()
+
     async def bootstrap(self) -> None:
         await self._backend.bootstrap(
             env_path=self._path,
             config=self.config,
         )
-        self.state = InitialState(stage=InitialStage.bootstrapped)
+        self.state = InitialState(
+            stage=InitialStage.bootstrapped,
+            ecosystem=self.config.ecosystem,
+        )
         write_state(self._path, self.state)
 
     async def freeze(self) -> None:
@@ -167,7 +188,10 @@ class Environment:
             config=self.config,
             lock_files_path=self.lock_files_path,
         )
-        self.state = InitialState(stage=InitialStage.frozen)
+        self.state = InitialState(
+            stage=InitialStage.frozen,
+            ecosystem=self.config.ecosystem,
+        )
         write_state(self._path, self.state)
         os.sync()
 
@@ -181,6 +205,7 @@ class Environment:
         self.state = SyncedState(
             stage=SyncedStage.synced,
             checksum=manifest.checksum,
+            ecosystem=self.config.ecosystem,
         )
         write_state(self._path, self.state)
 
@@ -227,6 +252,17 @@ async def prepare_environment(
     upgrade: bool = False,
 ) -> None:
     log_prefix = f"[{environment.config.id}] "
+
+    if environment.check_should_teardown():
+        print(
+            f"{log_prefix}Environment needs rebuilding, tearing down ...",
+            file=sys.stderr,
+        )
+        await environment.teardown()
+        print(
+            f"{log_prefix}Environment deleted.",
+            file=sys.stderr,
+        )
 
     if environment.check_should_bootstrap():
         print(f"{log_prefix}Bootstrapping environment ...", file=sys.stderr)
