@@ -31,6 +31,7 @@ from .scheduler import Scheduler
 from .scheduler import UnitFinished
 from .scheduler import UnitScheduled
 from .targets import Selector
+from .targets import filter_hook_targets
 from .targets import get_targets
 
 ConfigOption: TypeAlias = Annotated[
@@ -219,6 +220,36 @@ async def run(
                 assert_never(event)
 
     print_summary(console, scheduler)
+
+
+@cli.command()
+@asyncio_entrypoint
+async def select(
+    selected_hook: str = typer.Argument(),
+    config_path: ConfigOption = default_config,
+    select: Selector = typer.Option(default="diff"),
+) -> None:
+    """Show file selection for a given hook."""
+    error_console = Console(stderr=True)
+    console = Console()
+    ctx = gather_context(config_path)
+
+    try:
+        hook = next(hook for hook in ctx.config.hooks if hook.id == selected_hook)
+    except StopIteration:
+        error_console.print("No such hook.")
+        raise SystemExit(1) from None
+
+    if not hook.parameterize:
+        error_console.print(
+            "Hook is not parameterized, no target files are passed to it."
+        )
+        return
+
+    targets = await get_targets(ctx.config, select)
+    target_files = filter_hook_targets(hook, targets)
+    for file in target_files:
+        console.print(file)
 
 
 template = """\
