@@ -6,7 +6,6 @@ from collections.abc import Iterable
 from functools import total_ordering
 from pathlib import Path
 from typing import Self
-from typing import TypeVar
 from typing import final
 
 from pydantic import ValidationInfo
@@ -32,9 +31,6 @@ class LockFile(BaseModel):
         return self.path < other.path
 
 
-C = TypeVar("C", bound=Collection)
-
-
 class LockManifest(BaseModel):
     source_ecosystem: EcosystemConfig
     source_dependencies: tuple[str, ...]
@@ -43,21 +39,21 @@ class LockManifest(BaseModel):
 
     @field_validator("source_dependencies", "lock_files")
     @classmethod
-    def validate_sorted(cls, v: C) -> C:
+    def validate_sorted[C: Collection](cls, v: C) -> C:
         if sorted(v) != list(v):
             raise ValueError("must be sorted")
         return v
 
     @field_validator("source_dependencies", "lock_files")
     @classmethod
-    def validate_unique(cls, v: C) -> C:
+    def validate_unique[C: Collection](cls, v: C) -> C:
         if len(set(v)) != len(v):
             raise ValueError("must be unique")
         return v
 
     @field_validator("source_dependencies", "lock_files")
     @classmethod
-    def validate_non_empty(cls, v: C) -> C:
+    def validate_non_empty[C: Collection](cls, v: C) -> C:
         if len(v) == 0:
             raise ValueError("must not be empty")
         return v

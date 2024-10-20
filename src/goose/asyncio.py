@@ -2,14 +2,9 @@ import asyncio
 import functools
 from collections.abc import Callable
 from collections.abc import Coroutine
-from typing import ParamSpec
-from typing import TypeVar
-
-P = ParamSpec("P")
-R = TypeVar("R")
 
 
-def asyncio_entrypoint(
+def asyncio_entrypoint[R, **P](
     fn: Callable[P, Coroutine[None, None, R]],
 ) -> Callable[P, R]:
     @functools.wraps(fn)
