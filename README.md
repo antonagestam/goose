@@ -21,7 +21,7 @@
 #### Docker alias
 
 ```sh
-alias goose='docker run --rm -it -v ${PWD}:/wd -v ~/.cache/goose-docker:/home/nonroot/.cache ghcr.io/antonagestam/goose:latest'
+alias goose='docker run --rm -it -v ${PWD}:/wd -v ~/.cache/goose-docker:/home/nonroot/.cache -e "GOOSE_AUGMENTED_CWD=${PWD}" ghcr.io/antonagestam/goose:latest'
 ```
 
 #### Via PyPI
