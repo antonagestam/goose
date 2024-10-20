@@ -307,7 +307,7 @@ async def select(
 template = """\
 #!/usr/bin/env bash
 set -euo pipefail
-python -m goose run '--config={config_path}'
+goose run '--config={config_path}'
 """
 
 

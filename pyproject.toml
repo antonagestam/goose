@@ -51,6 +51,9 @@ dependencies = [
 [project.urls]
 "Source Repository" = "https://github.com/antonagestam/goose"
 
+[project.scripts]
+goose = "goose.__main__:cli"
+
 
 [tool.pip-tools]
 generate-hashes = true

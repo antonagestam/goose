@@ -106,13 +106,13 @@ hooks:
 Bootstrap environments, generate lock files, and install dependencies.
 
 ```sh
-$ python -m goose upgrade
+$ goose upgrade
 ```
 
 Run all hooks over all files.
 
 ```sh
-$ python -m goose run --select=all
+$ goose run --select=all
 ```
 
 Commit configuration and lock files.
@@ -129,7 +129,7 @@ configuration to upgrade hook dependency versions, instead you just run the upgr
 command.
 
 ```sh
-$ python -m goose upgrade
+$ goose upgrade
 $ git add .goose
 $ git commit -m 'Bump goose dependencies'
 ```
