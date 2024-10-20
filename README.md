@@ -61,6 +61,21 @@ the appropriate lock files under a `.goose/` directory. The `.goose/` directory 
 to be checked into git, so that future invocations of `goose run` can use the lock files
 it contains to produce identical environments for hooks to run in.
 
+```mermaid
+---
+title: Lock file workflow
+---
+flowchart LR
+  cfg["Config in goose.yaml"] -- goose upgrade --> lf
+  lf["Lock files under .goose/"] -- goose run --> env
+  env["Environments"]
+```
+
+- Invoking `goose upgrade` creates lock files under the in-tree `.goose` directory.
+- Invoking `goose run` creates out-of-tree environments from the lock files. By default
+  they live under `~/.cache/goose`.
+- Hooks are executed in the generated environments.
+
 ## Usage
 
 Create a `goose.yaml` file in the repository root.
