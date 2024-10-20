@@ -18,16 +18,36 @@
 
 ### Installation
 
+#### Via PyPI
+
+```shell
+pip install --require-venv git-goose
+```
+
+#### Via pipx
+
+```shell
+pipx install git-goose
+```
+
 #### Docker alias
 
 ```sh
 alias goose='docker run --rm -it -v ${PWD}:/wd -v ~/.cache/goose-docker:/home/nonroot/.cache -e "GOOSE_AUGMENTED_CWD=${PWD}" ghcr.io/antonagestam/goose:latest'
 ```
 
-#### Via PyPI
+#### Github Actions
 
-```shell
-pip install --require-venv git-goose
+```yaml
+name: CI
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+jobs:
+  lint:
+    name: Run goose checks
+    uses: antonagestam/goose/.github/workflows/run.yaml@main
 ```
 
 ### Features
