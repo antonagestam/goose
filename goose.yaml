@@ -40,8 +40,9 @@ hooks:
 
   - id: mypy
     environment: type-check
-    command: env
-    args: [FORCE_COLOR=1, mypy]
+    command: mypy
+    env_vars:
+      FORCE_COLOR: "1"
     read_only: true
     parameterize: false
 
