@@ -27,6 +27,12 @@
 pip install --require-venv git-goose
 ```
 
+#### Via uvx
+
+```shell
+uvx install git-goose
+```
+
 #### Via pipx
 
 ```shell
