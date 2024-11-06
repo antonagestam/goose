@@ -37,10 +37,16 @@ def _run_env(env_path: Path) -> dict[str, str]:
     }
 
 
-async def _create_virtualenv(env_path: Path) -> None:
+async def _create_virtualenv(env_path: Path, version: str) -> None:
     process = await asyncio.create_subprocess_exec(
         system_python(),
-        *("-m", "venv", str(env_path)),
+        "-m",
+        "uv",
+        "venv",
+        "--no-project",
+        "--python-preference=only-managed",
+        f"--python={version}",
+        str(env_path),
         env=_bootstrap_env(),
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
@@ -56,8 +62,11 @@ async def _pip_install(
     dependencies: Iterable[str],
 ) -> None:
     process = await asyncio.create_subprocess_exec(
-        _venv_python(env_path),
-        *("-m", "pip", "install", *dependencies),
+        "uv",
+        "pip",
+        "install",
+        f"--python={_venv_python(env_path)}",
+        *dependencies,
         env=_bootstrap_env(),
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
@@ -73,7 +82,12 @@ async def _pip_sync(
     requirements_txt: Path,
 ) -> None:
     process = await asyncio.create_subprocess_exec(
-        env_path / "bin" / "pip-sync",
+        system_python(),
+        "-m",
+        "uv",
+        "pip",
+        "sync",
+        f"--python={_venv_python(env_path)}",
         str(requirements_txt),
         env=_bootstrap_env(),
         stdout=asyncio.subprocess.PIPE,
@@ -90,10 +104,7 @@ async def bootstrap(
     config: EnvironmentConfig,
 ) -> None:
     print(f"Creating virtualenv {env_path.name}", file=sys.stderr)
-    await _create_virtualenv(env_path)
-
-    print("Installing pip-tools ...", file=sys.stderr)
-    await _pip_install(env_path, ("pip-tools",))
+    await _create_virtualenv(env_path, config.ecosystem.version)
 
 
 async def freeze(
@@ -115,18 +126,19 @@ async def freeze(
                 print(dependency, file=fd)
 
         process = await asyncio.create_subprocess_exec(
-            env_path / "bin" / "pip-compile",
-            *(
-                "--upgrade",
-                "--strip-extras",
-                "--generate-hashes",
-                "--resolver=backtracking",
-                "--no-annotate",
-                "--no-header",
-                "--allow-unsafe",
-                f"--output-file={requirements_txt}",
-                f"{tmp_requirements_in}",
-            ),
+            system_python(),
+            "-m",
+            "uv",
+            "pip",
+            "compile",
+            f"--python={_venv_python(env_path)}",
+            "--upgrade",
+            "--strip-extras",
+            "--generate-hashes",
+            "--no-annotate",
+            "--no-header",
+            f"--output-file={requirements_txt}",
+            f"{tmp_requirements_in}",
             env=_bootstrap_env(),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
