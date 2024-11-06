@@ -1,4 +1,4 @@
 .PHONY: requirements
 requirements: export CUSTOM_COMPILE_COMMAND='make requirements'
 requirements:
-	@pip-compile
+	@uv pip compile --generate-hashes --strip-extras --upgrade requirements.txt
