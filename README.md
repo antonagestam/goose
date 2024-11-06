@@ -12,10 +12,10 @@
 
 <p align=center>A <i>picky</i> and <i>eager</i> <a href=https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks>Git hook</a> runner.</p>
 
-- Reproducible builds.
-- Dynamic parallelism.
-- Small file-system footprint.
-- Fast Python environmnent and dependency management thanks to [uv].
+- 🔒 Reproducible builds.
+- ⚡ Dynamic parallelism.
+- 💨 Small file-system footprint.
+- 🏃 Fast Python environmnent and dependency management thanks to [uv].
 
 [uv]: https://github.com/astral-sh/uv
 
