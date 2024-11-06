@@ -269,3 +269,22 @@ hooks:
     read_only: true
     parameterize: false
 ```
+
+### Environment variables
+
+Hook invocations are called with the same environment variables as `goose` is invoked
+with, other than `PATH` being overridden to point at the environment of the hook.
+
+Static environment variables can be configured in hook definitions. These will overwrite
+inherited values, but cannot overwrite `PATH`.
+
+```yaml
+hooks:
+  - id: mypy
+    environment: type-check
+    command: mypy
+    env_vars:
+      FORCE_COLOR: "1"
+    read_only: true
+    parameterize: false
+```

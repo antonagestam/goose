@@ -1,14 +1,19 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
+from collections.abc import Mapping
 from pathlib import Path
 from re import Pattern
+from typing import Annotated
 from typing import Literal
 from typing import NewType
 from typing import Self
 from typing import final
 
 import yaml
+from pydantic import BeforeValidator
 from pydantic import model_validator
+from pydantic_core.core_schema import ValidationInfo
 
 from ._utils.pydantic import BaseModel
 
@@ -29,12 +34,28 @@ class EnvironmentConfig(BaseModel):
     dependencies: tuple[str, ...]
 
 
+def mapping_as_items(
+    value: object,
+    info: ValidationInfo,
+) -> Iterable[tuple]:
+    if not isinstance(value, Mapping):
+        raise ValueError(f"Field {info.field_name} must be a mapping")
+    return value.items()
+
+
+type ItemTuple[K, V] = Annotated[
+    tuple[tuple[K, V], ...],
+    BeforeValidator(mapping_as_items),
+]
+
+
 @final
 class HookConfig(BaseModel):
     id: str
     environment: EnvironmentId
     command: str
     args: tuple[str, ...] = ()
+    env_vars: ItemTuple[str, str] = ()
     parameterize: bool = True
     types: frozenset[str] = frozenset()
     exclude: tuple[Pattern, ...] = ()

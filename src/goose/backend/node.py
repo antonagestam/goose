@@ -172,7 +172,11 @@ async def run(
     process = await asyncio.create_subprocess_exec(
         env_path / "bin" / "npm",
         *args,
-        env=os.environ | {"PATH": f"{os.environ['PATH']}:{env_path / 'bin'}"},
+        env={
+            **os.environ,
+            **dict(unit.hook.env_vars),
+            "PATH": f"{os.environ['PATH']}:{env_path / 'bin'}",
+        },
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )

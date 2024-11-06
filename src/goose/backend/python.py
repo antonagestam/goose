@@ -30,13 +30,6 @@ def _bootstrap_env() -> dict[str, str]:
     }
 
 
-def _run_env(env_path: Path) -> dict[str, str]:
-    bin_path = env_path / "bin"
-    return os.environ | {
-        "PATH": f"{bin_path}:{os.environ['PATH']}",
-    }
-
-
 async def _create_virtualenv(env_path: Path, version: str) -> None:
     process = await asyncio.create_subprocess_exec(
         system_python(),
@@ -176,11 +169,16 @@ async def run(
     config: EnvironmentConfig,
     unit: ExecutableUnit,
 ) -> RunResult:
+    bin_path = env_path / "bin"
     process = await asyncio.create_subprocess_exec(
         unit.hook.command,
         *unit.hook.args,
         *unit.targets,
-        env=_run_env(env_path),
+        env={
+            **os.environ,
+            **dict(unit.hook.env_vars),
+            "PATH": f"{bin_path}:{os.environ['PATH']}",
+        },
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
