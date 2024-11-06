@@ -56,12 +56,6 @@ dependencies = [
 goose = "goose.__main__:cli"
 
 
-[tool.pip-tools]
-generate-hashes = true
-strip-extras = true
-upgrade = true
-
-
 [tool.mypy]
 python_version = 3.13
 show_error_codes = true
