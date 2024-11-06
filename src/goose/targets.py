@@ -2,8 +2,8 @@ import asyncio
 import asyncio.subprocess
 import enum
 import re
-from collections.abc import AsyncIterator
-from collections.abc import Iterator
+from collections.abc import AsyncGenerator
+from collections.abc import AsyncIterable
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -18,7 +18,6 @@ from goose.process import stream_out
 from .config import Config
 from .config import HookConfig
 from .filter import path_matches_patterns
-from .git.shared import nil_split
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -32,12 +31,29 @@ class Selector(enum.Enum):
     diff = "diff"
 
 
-def _split_git_path_line(paths: bytes) -> Iterator[Path]:
-    for part in nil_split(paths):
-        yield Path(part)
+async def _nil_split_stream(stream: asyncio.StreamReader) -> AsyncGenerator[bytes]:
+    while True:
+        if stream.at_eof():
+            break
+        try:
+            chunk = await stream.readuntil((b"\x00", b"\n"))
+        except asyncio.IncompleteReadError as exc:
+            if exc.expected is not None:
+                raise
+            break
+        chunk = chunk.rstrip(b"\x00")
+        chunk = chunk.strip()
+        if not chunk:
+            continue
+        yield chunk
 
 
-async def _git_file_list(selector: Selector) -> AsyncIterator[Path]:
+async def _stream_paths(stream: AsyncIterable[bytes]) -> AsyncGenerator[Path]:
+    async for part in stream:
+        yield Path(part.decode())
+
+
+async def _git_file_list(selector: Selector) -> AsyncGenerator[Path]:
     command: Sequence[str]
     if selector is Selector.all:
         command = ("git", "ls-files", "-z")
@@ -60,12 +76,8 @@ async def _git_file_list(selector: Selector) -> AsyncIterator[Path]:
     assert process.stdout is not None
     assert process.stderr is not None
     stream_stderr = asyncio.create_task(stream_out("[stderr]", process.stderr))
-    while not process.stdout.at_eof():
-        line = await process.stdout.readline()
-        if not line:
-            continue
-        for path in _split_git_path_line(line):
-            yield path
+    async for path in _stream_paths(_nil_split_stream(process.stdout)):
+        yield path
     await stream_stderr
     await process.wait()
 
