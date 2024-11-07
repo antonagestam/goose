@@ -24,6 +24,7 @@ from .executable_unit import ExecutableUnit
 from .manifest import LockFileState
 from .manifest import check_lock_files
 from .manifest import read_manifest
+from .manifest import write_manifest
 
 
 class NeedsFreeze(Exception): ...
@@ -183,11 +184,13 @@ class Environment:
         write_state(self._path, self.state)
 
     async def freeze(self) -> None:
-        await self._backend.freeze(
+        self.lock_files_path.mkdir(exist_ok=True)
+        manifest = await self._backend.freeze(
             env_path=self._path,
             config=self.config,
             lock_files_path=self.lock_files_path,
         )
+        write_manifest(self.lock_files_path, manifest)
         self.state = InitialState(
             stage=InitialStage.frozen,
             ecosystem=self.config.ecosystem,

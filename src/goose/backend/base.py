@@ -8,6 +8,7 @@ from typing import final
 
 from goose.config import EnvironmentConfig
 from goose.executable_unit import ExecutableUnit
+from goose.manifest import LockManifest
 
 
 class Bootstrap(Protocol):
@@ -26,7 +27,7 @@ class Freeze(Protocol):
         config: EnvironmentConfig,
         env_path: Path,
         lock_files_path: Path,
-    ) -> Awaitable[None]: ...
+    ) -> Awaitable[LockManifest]: ...
 
 
 class Sync(Protocol):

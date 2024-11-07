@@ -15,8 +15,8 @@ from pydantic import Field
 from goose._utils.pydantic import BaseModel
 from goose.config import EnvironmentConfig
 from goose.executable_unit import ExecutableUnit
+from goose.manifest import LockManifest
 from goose.manifest import build_manifest
-from goose.manifest import write_manifest
 from goose.process import stream_both
 from goose.process import system_python
 
@@ -92,9 +92,7 @@ async def freeze(
     env_path: Path,
     config: EnvironmentConfig,
     lock_files_path: Path,
-) -> None:
-    lock_files_path.mkdir(exist_ok=True)
-
+) -> LockManifest:
     package_json_path = _write_package_json(config, lock_files_path)
 
     with cd_to(lock_files_path):
@@ -115,7 +113,7 @@ async def freeze(
         raise RuntimeError("Failed freezing dependencies {process.returncode=}")
 
     package_lock_json_path = lock_files_path / "package-lock.json"
-    manifest = build_manifest(
+    return build_manifest(
         source_ecosystem=config.ecosystem,
         source_dependencies=config.dependencies,
         lock_files=(
@@ -124,7 +122,6 @@ async def freeze(
         ),
         lock_files_path=lock_files_path,
     )
-    write_manifest(lock_files_path, manifest)
 
 
 async def sync(
