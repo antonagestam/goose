@@ -1,4 +1,20 @@
 environments:
+  - id: python
+    ecosystem:
+      language: python
+      version: "3.13"
+    dependencies:
+      - ruff
+      - pre-commit-hooks
+      - pip-audit
+
+  - id: node
+    ecosystem:
+      language: node
+      version: "23.0.0"
+    dependencies:
+      - prettier
+
   - id: type-check
     ecosystem:
       language: python
@@ -11,22 +27,17 @@ environments:
       - identify
       - rich
 
-  - id: python
-    ecosystem:
-      language: python
-      version: "3.13"
-    dependencies:
-      - ruff
-      - pre-commit-hooks
-
-  - id: node
-    ecosystem:
-      language: node
-      version: "23.0.0"
-    dependencies:
-      - prettier
-
 hooks:
+  - id: pip-audit
+    environment: python
+    command: pip-audit
+    args:
+      - --require-hashes
+      - --disable-pip
+      - --requirement=requirements.txt
+    parameterize: false
+    read_only: true
+
   - id: prettier
     environment: node
     command: prettier
