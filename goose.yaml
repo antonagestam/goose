@@ -26,6 +26,7 @@ environments:
       - typer
       - identify
       - rich
+      - pytest
 
 hooks:
   - id: pip-audit

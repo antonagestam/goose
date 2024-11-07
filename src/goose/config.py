@@ -39,7 +39,7 @@ def mapping_as_items(
     info: ValidationInfo,
 ) -> Iterable[tuple]:
     if not isinstance(value, Mapping):
-        raise ValueError(f"Field {info.field_name} must be a mapping")
+        raise ValueError(f"Field {info.field_name!r} must be a mapping")
     return value.items()
 
 
@@ -73,19 +73,22 @@ class Config(BaseModel):
         environments = {env.id for env in self.environments}
         for hook in self.hooks:
             if hook.environment not in environments:
-                raise ValueError(f"Unknown hook environment: {hook.environment!r}")
+                raise ValueError(
+                    f"unknown hook environment: {hook.environment!r}. This must refer "
+                    f"to an environment id defined in top-level environments."
+                )
         return self
 
     @model_validator(mode="after")  # type: ignore[misc]
     def validate_hook_ids_unique(self) -> Self:
         if len({hook.id for hook in self.hooks}) != len(self.hooks):
-            raise ValueError("Hook ids must be unique")
+            raise ValueError("hook ids must be unique.")
         return self
 
     @model_validator(mode="after")  # type: ignore[misc]
     def validate_environment_ids_unique(self) -> Self:
         if len({env.id for env in self.environments}) != len(self.environments):
-            raise ValueError("Environment ids must be unique")
+            raise ValueError("environment ids must be unique")
         return self
 
 

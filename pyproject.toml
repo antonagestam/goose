@@ -55,6 +55,11 @@ dependencies = [
 [project.scripts]
 goose = "goose.__main__:cli"
 
+[project.optional-dependencies]
+test = [
+  "pytest",
+]
+
 
 [tool.mypy]
 python_version = 3.13
