@@ -20,7 +20,7 @@ from ._utils.pydantic import BaseModel
 
 @final
 class EcosystemConfig(BaseModel):
-    language: Literal["python", "node"]
+    language: Literal["python", "node", "system"]
     version: str
 
 

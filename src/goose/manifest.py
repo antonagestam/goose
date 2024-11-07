@@ -51,17 +51,10 @@ class LockManifest(BaseModel):
             raise ValueError("must be unique")
         return v
 
-    @field_validator("source_dependencies", "lock_files")
-    @classmethod
-    def validate_non_empty[C: Collection](cls, v: C) -> C:
-        if len(v) == 0:
-            raise ValueError("must not be empty")
-        return v
-
     @field_validator("checksum")
     @classmethod
     def validate_checksum_matches(cls, v: str, info: ValidationInfo) -> str:
-        expected = _get_accumulated_checksum(info.data["lock_files"])
+        expected = _get_accumulated_checksum(info.data.get("lock_files", ()))
         if v != expected:
             raise ValueError(
                 "checksum does not match accumulation of lock file checksums"
