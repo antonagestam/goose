@@ -59,6 +59,12 @@ goose = "goose.__main__:cli"
 test = [
   "pytest",
 ]
+docs = [
+  "mkdocs",
+  "mike",
+  "mkdocs-material",
+  "markdown-include",
+]
 
 
 [tool.mypy]
