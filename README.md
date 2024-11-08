@@ -15,7 +15,7 @@
 - 🔒 Reproducible builds.
 - ⚡ Dynamic parallelism.
 - 💨 Small file-system footprint.
-- 🏃 Fast Python environmnent and dependency management thanks to [uv].
+- 🏃 Fast Python dependency management thanks to [uv].
 
 [uv]: https://github.com/astral-sh/uv
 
