@@ -14,6 +14,8 @@ env:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       # Checkout and prepare git.
       - name: checkout gh-pages
