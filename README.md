@@ -21,28 +21,14 @@
 
 ### Installation
 
-#### Via PyPI
+Refer to the [documentation for alternative installation instructions][docs-install].
 
-```shell
-pip install --require-venv git-goose
-```
+[docs-install]: https://antonagestam.github.io/goose/latest/installation/
 
 #### Via uvx
 
 ```shell
 uvx install git-goose
-```
-
-#### Via pipx
-
-```shell
-pipx install git-goose
-```
-
-#### Docker alias
-
-```sh
-alias goose='docker run --rm -it -v ${PWD}:/wd -v ~/.cache/goose-docker:/home/nonroot/.cache -e "GOOSE_AUGMENTED_CWD=${PWD}" ghcr.io/antonagestam/goose:latest'
 ```
 
 #### Github Actions
