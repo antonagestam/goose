@@ -5,6 +5,7 @@ import sys
 from collections.abc import Iterable
 from contextlib import ExitStack
 from pathlib import Path
+from typing import IO
 from typing import Final
 
 from goose.config import EnvironmentConfig
@@ -165,6 +166,7 @@ async def run(
     env_path: Path,
     config: EnvironmentConfig,
     unit: ExecutableUnit,
+    buffer: IO[str],
 ) -> RunResult:
     bin_path = env_path / "bin"
     process = await asyncio.create_subprocess_exec(
@@ -179,9 +181,8 @@ async def run(
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    await stream_both(process)
+    await stream_both(process, file=buffer, prefix=unit.log_prefix)
     await process.wait()
-
     return RunResult.ok if process.returncode == 0 else RunResult.error
 
 

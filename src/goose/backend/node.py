@@ -8,6 +8,7 @@ from collections.abc import Iterator
 from collections.abc import Mapping
 from collections.abc import Sequence
 from pathlib import Path
+from typing import IO
 from typing import Final
 
 from pydantic import Field
@@ -157,6 +158,7 @@ async def run(
     env_path: Path,
     config: EnvironmentConfig,
     unit: ExecutableUnit,
+    buffer: IO[str],
 ) -> RunResult:
     args: Sequence[str | Path] = (
         "exec",
@@ -177,7 +179,7 @@ async def run(
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    await stream_both(process)
+    await stream_both(process, file=buffer, prefix=unit.log_prefix)
     await process.wait()
 
     return RunResult.ok if process.returncode == 0 else RunResult.error

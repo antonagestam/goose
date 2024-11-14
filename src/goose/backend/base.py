@@ -3,6 +3,7 @@ from collections.abc import Awaitable
 from collections.abc import Coroutine
 from dataclasses import dataclass
 from pathlib import Path
+from typing import IO
 from typing import Protocol
 from typing import final
 
@@ -53,6 +54,7 @@ class Run(Protocol):
         config: EnvironmentConfig,
         env_path: Path,
         unit: ExecutableUnit,
+        buffer: IO[str],
     ) -> Coroutine[None, None, RunResult]: ...
 
 

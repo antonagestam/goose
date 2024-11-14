@@ -37,7 +37,8 @@ class Scheduler:
         self,
         context: Context,
         targets: Sequence[Target],
-        selected_hook: str | None = None,
+        selected_hook: str | None,
+        verbose: bool,
     ) -> None:
         self._context: Final = context
         self._max_running: Final = os.cpu_count() or 2
@@ -46,6 +47,7 @@ class Scheduler:
             for hook in context.config.hooks
             if selected_hook is None or hook.id == selected_hook
         }
+        self._verbose: Final = verbose
 
         if not self._units:
             if selected_hook is None:
@@ -62,7 +64,7 @@ class Scheduler:
     async def _schedule_unit(self, unit: ExecutableUnit) -> UnitScheduled:
         self._remaining_units.remove(unit)
         environment = self._context.environments[unit.hook.environment]
-        self._running_units[unit] = asyncio.Task(environment.run(unit))
+        self._running_units[unit] = asyncio.Task(environment.run(unit, self._verbose))
         return UnitScheduled(unit)
 
     async def _schedule_max(self) -> AsyncIterator[UnitScheduled]:

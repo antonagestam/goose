@@ -55,6 +55,7 @@ hooks:
     command: mypy
     env_vars:
       FORCE_COLOR: "1"
+      COLUMNS: "150"
     read_only: true
     parameterize: false
 
