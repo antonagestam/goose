@@ -1,5 +1,6 @@
 import asyncio
 import enum
+import io
 import os
 import shutil
 import sys
@@ -212,24 +213,36 @@ class Environment:
         )
         write_state(self._path, self.state)
 
-    async def run(self, unit: ExecutableUnit) -> RunResult:
+    async def run(self, unit: ExecutableUnit, verbose: bool) -> RunResult:
+        buffer = io.StringIO()
         coroutine = self._backend.run(
             env_path=self._path,
             config=self.config,
             unit=unit,
+            buffer=buffer,
         )
 
-        # We don't track modifications for read-only hooks.
-        if unit.hook.read_only:
-            return await coroutine
+        async def _run() -> RunResult:
+            # We don't track modifications for read-only hooks.
+            if unit.hook.read_only:
+                return await coroutine
 
-        status_prior = await get_git_status(unit.targets)
-        result = await coroutine
-        if result is RunResult.error:
+            status_prior = await get_git_status(unit.targets)
+            result = await coroutine
+            if result is RunResult.error:
+                return result
+            status_post = await get_git_status(unit.targets)
+            if status_prior != status_post:
+                return RunResult.modified
             return result
-        status_post = await get_git_status(unit.targets)
-        if status_prior != status_post:
-            return RunResult.modified
+
+        result = await _run()
+
+        if verbose or result is not RunResult.ok:
+            value = buffer.getvalue().rstrip()
+            if value:
+                print(value, file=sys.stderr)
+
         return result
 
 

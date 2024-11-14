@@ -1,7 +1,6 @@
 import asyncio
 import enum
 import sys
-import time
 from collections.abc import Collection
 from collections.abc import Iterator
 from pathlib import Path
@@ -175,6 +174,7 @@ async def run(
     config_path: ConfigOption = default_config,
     delete_orphan_environments: bool = False,
     select: Selector = typer.Option(default="diff"),
+    verbose: bool = False,
 ) -> None:
     console = Console(stderr=True)
     ctx = gather_context(config_path)
@@ -205,21 +205,21 @@ async def run(
         context=ctx,
         targets=await get_targets(ctx.config, select),
         selected_hook=selected_hook,
+        verbose=verbose,
     )
 
     if sys.stdout.isatty():
         await display_live_table(scheduler)
     else:
         async for event in scheduler.until_complete():
-            t = time.time_ns()
             if isinstance(event, UnitScheduled):
                 print(
-                    f"[{event.unit.hook.id}@{event.unit.id}] [{t}] Unit scheduled",
+                    f"{event.unit.log_prefix}Unit scheduled",
                     file=sys.stderr,
                 )
             elif isinstance(event, UnitFinished):
                 print(
-                    f"[{event.unit.hook.id}@{event.unit.id}] [{t}] Unit finished: {event.result.name}",
+                    f"{event.unit.log_prefix}Unit finished: {event.result.name}",
                     file=sys.stderr,
                 )
             else:

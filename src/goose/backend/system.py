@@ -1,6 +1,7 @@
 import asyncio
 import os
 from pathlib import Path
+from typing import IO
 from typing import Final
 
 from goose.backend.base import Backend
@@ -44,6 +45,7 @@ async def run(
     env_path: Path,
     config: EnvironmentConfig,
     unit: ExecutableUnit,
+    buffer: IO[str],
 ) -> RunResult:
     process = await asyncio.create_subprocess_exec(
         unit.hook.command,
@@ -56,7 +58,7 @@ async def run(
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    await stream_both(process)
+    await stream_both(process, file=buffer, prefix=unit.log_prefix)
     await process.wait()
 
     return RunResult.ok if process.returncode == 0 else RunResult.error

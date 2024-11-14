@@ -9,3 +9,7 @@ class ExecutableUnit:
     id: int
     hook: HookConfig
     targets: frozenset[Path] = frozenset()
+
+    @property
+    def log_prefix(self) -> str:
+        return f"[{self.hook.id}@{self.id}] "
