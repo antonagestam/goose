@@ -212,7 +212,9 @@ async def run(
         await display_live_table(scheduler)
     else:
         async for event in scheduler.until_complete():
-            if isinstance(event, UnitScheduled):
+            if not verbose:
+                continue
+            elif isinstance(event, UnitScheduled):
                 print(
                     f"{event.unit.log_prefix}Unit scheduled",
                     file=sys.stderr,
