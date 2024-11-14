@@ -43,7 +43,7 @@ jobs:
           --require-hashes
           --no-deps
           -r requirements-docs.txt
-      - run: uv pip install . --no-deps
+      - run: uv pip install -e . --no-deps
       - run: uv pip check
 
       - if: "github.ref == 'refs/heads/main'"
