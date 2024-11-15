@@ -81,7 +81,7 @@ class Environment:
         discovered_state: State,
     ) -> None:
         self.config: Final = config
-        self._backend: Final = load_backend(config.ecosystem)
+        self._backend: Final = load_backend(config.ecosystem.language)
         self._path: Final = path
         self.lock_files_path: Final = lock_files_path / config.id
         # This is read initially from file-system, so we don't entirely trust
