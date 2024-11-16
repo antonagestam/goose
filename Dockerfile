@@ -1,33 +1,32 @@
-FROM python:3.13.0-bookworm AS build
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm AS build
 
 ARG RELEASE_VERSION="dev"
 ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_GIT_GOOSE=$RELEASE_VERSION
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
-ENV PIP_REQUIRE_VIRTUALENV true
-ENV PIP_VERSION 24.2
-ENV SETUPTOOLS_VERSION 75.2.0
-ENV WHEEL_VERSION 0.44.0
 # Permanently activate virtualenv.
 ENV PATH="/venv/bin:$PATH"
 
 # Build requirements.
-RUN --mount=type=cache,target=/root/.cache/pip \
+RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,readwrite,source=.,target=/app-src \
     set -eux \
- && python -m venv /venv \
- && pip install \
-      pip==$PIP_VERSION \
-      setuptools==$SETUPTOOLS_VERSION \
-      wheel==$WHEEL_VERSION \
- && pip install \
+ && uv venv \
+      --no-project \
+      --python-preference=only-system \
+      /venv \
+ && uv pip install \
+      --python=/venv/bin/python \
       --only-binary=:all: \
-      --no-dependencies \
+      --no-deps \
       --require-hashes \
       -r /app-src/requirements.txt \
- && pip install --no-dependencies /app-src \
- && pip check
+ && uv pip install \
+      --python=/venv/bin/python \
+      --no-deps \
+      /app-src \
+ && uv pip check --python=/venv/bin/python
 
 FROM python:3.13.0-slim-bookworm AS final
 
