@@ -32,7 +32,7 @@ def hook_as_executable_units(
     assert hook.parameterize
 
     # Distribute target files over one executable unit per core.
-    process_count = os.cpu_count() or 2
+    process_count = os.process_cpu_count() or 2  # type: ignore[attr-defined]
     batch_size = math.ceil(len(target_files) / process_count)
     for unit_id, file_batch in enumerate(batched(target_files, batch_size)):
         yield ExecutableUnit(
