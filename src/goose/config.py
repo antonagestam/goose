@@ -58,6 +58,7 @@ class HookConfig(BaseModel):
     env_vars: ItemTuple[str, str] = ()
     parameterize: bool = True
     types: frozenset[str] = frozenset()
+    limit: tuple[Pattern, ...] = ()
     exclude: tuple[Pattern, ...] = ()
     read_only: bool = False
 
@@ -66,6 +67,7 @@ class HookConfig(BaseModel):
 class Config(BaseModel):
     environments: tuple[EnvironmentConfig, ...]
     hooks: tuple[HookConfig, ...]
+    limit: tuple[Pattern, ...] = ()
     exclude: tuple[Pattern, ...] = ()
 
     @model_validator(mode="after")  # type: ignore[misc]
