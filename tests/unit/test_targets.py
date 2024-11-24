@@ -58,8 +58,23 @@ async def test_stream_paths() -> None:
 @pytest.fixture
 async def git_repository(tmp_path: Path) -> AsyncGenerator[Path]:
     with chdir(tmp_path):
+        # Initiate repository, configure name and email.
         create_repository = await asyncio.create_subprocess_exec("git", "init")
         await create_repository.wait()
+        configure_email = await asyncio.create_subprocess_exec(
+            "git",
+            "config",
+            "user.email",
+            "goose@example.test",
+        )
+        await configure_email.wait()
+        configure_name = await asyncio.create_subprocess_exec(
+            "git",
+            "config",
+            "user.name",
+            "Goosin Around",
+        )
+        await configure_name.wait()
 
         (checked_in := tmp_path / "checked-in.txt").write_text("foo")
         (staged := tmp_path / "staged.txt").write_text("bar")
