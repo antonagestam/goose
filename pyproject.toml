@@ -100,4 +100,4 @@ ignore = ["src/goose/_version.py"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
-add_opts = "--import-mode=importlib"
+addopts = "--import-mode=importlib"
