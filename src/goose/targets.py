@@ -57,23 +57,9 @@ async def _stream_paths(stream: AsyncIterable[bytes]) -> AsyncGenerator[Path]:
         yield Path(part.decode())
 
 
-async def _git_file_list(selector: Selector) -> AsyncGenerator[Path]:
-    command: Sequence[str]
-    if selector is Selector.all:
-        command = ("git", "ls-files", "-z")
-    elif selector is Selector.diff:
-        command = (
-            "git",
-            "diff",
-            # Note: D is not included here, such that we do not pass deleted files.
-            "--diff-filter=ACMR",
-            "--name-only",
-            "-z",
-            "HEAD",
-        )
-    else:
-        assert_never(selector)
-
+async def stream_paths_from_process(
+    command: Sequence[str],
+) -> AsyncGenerator[Path]:
     process = await asyncio.create_subprocess_exec(
         *command,
         stdout=asyncio.subprocess.PIPE,
@@ -88,6 +74,32 @@ async def _git_file_list(selector: Selector) -> AsyncGenerator[Path]:
         yield path
     await stream_stderr
     await process.wait()
+
+
+base_diff_command: Final = (
+    "git",
+    "diff",
+    # Note: D is not included here, such that we do not pass deleted files.
+    "--diff-filter=ACMR",
+    "--name-only",
+    "-z",
+)
+
+
+async def _git_file_list(selector: Selector) -> AsyncGenerator[Path]:
+    command: Sequence[str]
+    if selector is Selector.all:
+        command = ("git", "ls-files", "-z")
+    elif selector is Selector.diff:
+        command = (
+            *base_diff_command,
+            "HEAD",
+        )
+    else:
+        assert_never(selector)
+
+    async for path in stream_paths_from_process(command):
+        yield path
 
 
 def _path_matches_patterns(
@@ -141,7 +153,10 @@ def _get_path_matcher(
 _builtin_excludes: Final = (re.compile(r"^\.goose/.*"),)
 
 
-async def get_targets(config: Config, selector: Selector) -> tuple[Target, ...]:
+def get_targets_from_paths(
+    config: Config,
+    paths: Iterable[Path],
+) -> tuple[Target, ...]:
     path_is_included = _get_path_matcher(
         exclude=(*config.exclude, *_builtin_excludes),
         limit=config.limit,
@@ -152,9 +167,16 @@ async def get_targets(config: Config, selector: Selector) -> tuple[Target, ...]:
                 path=path,
                 tags=frozenset(tags_from_filename(str(path))),
             )
-            async for path in _git_file_list(selector)
+            for path in paths
             if path_is_included(path)
         ]
+    )
+
+
+async def select_targets(config: Config, selector: Selector) -> tuple[Target, ...]:
+    return get_targets_from_paths(
+        config,
+        [path async for path in _git_file_list(selector)],
     )
 
 

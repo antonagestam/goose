@@ -43,7 +43,7 @@ class Scheduler:
         self._context: Final = context
         self._max_running: Final = os.cpu_count() or 2
         self._units: Final = {
-            hook: tuple(hook_as_executable_units(hook, targets))
+            hook: tuple(hook_as_executable_units(hook, targets, verbose))
             for hook in context.config.hooks
             if selected_hook is None or hook.id == selected_hook
         }
