@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import asyncio
 import asyncio.subprocess
 import enum
 import re
 from collections.abc import AsyncGenerator
 from collections.abc import AsyncIterable
+from collections.abc import Callable
 from collections.abc import Iterable
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -94,21 +97,65 @@ def _path_matches_patterns(
     return any(pattern.search(str(path)) is not None for pattern in patterns)
 
 
+def _get_path_matcher(
+    exclude: Sequence[Pattern[str]],
+    limit: Sequence[Pattern[str]],
+) -> Callable[[Path], bool]:
+    match: Callable[[Path], bool]
+
+    if not exclude and not limit:
+
+        def match(path: Path, /) -> bool:
+            return True
+    elif not limit:
+
+        def match(
+            path: Path,
+            /,
+            _exclude: Sequence[Pattern[str]] = exclude,
+        ) -> bool:
+            return not _path_matches_patterns(path, _exclude)
+    elif not exclude:
+
+        def match(
+            path: Path,
+            /,
+            _limit: Sequence[Pattern[str]] = limit,
+        ) -> bool:
+            return _path_matches_patterns(path, _limit)
+    else:
+
+        def match(
+            path: Path,
+            /,
+            _exclude: Sequence[Pattern[str]] = exclude,
+            _limit: Sequence[Pattern[str]] = limit,
+        ) -> bool:
+            return _path_matches_patterns(path, _limit) and not _path_matches_patterns(
+                path, _exclude
+            )
+
+    return match
+
+
 _builtin_excludes: Final = (re.compile(r"^\.goose/.*"),)
 
 
 async def get_targets(config: Config, selector: Selector) -> tuple[Target, ...]:
-    targets = []
-    async for path in _git_file_list(selector):
-        if _path_matches_patterns(path, (*config.exclude, *_builtin_excludes)):
-            continue
-        targets.append(
+    path_is_included = _get_path_matcher(
+        exclude=(*config.exclude, *_builtin_excludes),
+        limit=config.limit,
+    )
+    return tuple(
+        [
             Target(
                 path=path,
                 tags=frozenset(tags_from_filename(str(path))),
             )
-        )
-    return tuple(targets)
+            async for path in _git_file_list(selector)
+            if path_is_included(path)
+        ]
+    )
 
 
 def filter_hook_targets(
@@ -119,9 +166,14 @@ def filter_hook_targets(
     if not hook.parameterize:
         return frozenset()
 
+    path_is_included = _get_path_matcher(
+        exclude=hook.exclude,
+        limit=hook.limit,
+    )
+
     return frozenset(
         target.path
         for target in targets
         if (not hook.types or target.tags & hook.types)
-        if not _path_matches_patterns(target.path, hook.exclude)
+        if path_is_included(target.path)
     )
