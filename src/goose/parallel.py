@@ -14,12 +14,14 @@ from .targets import filter_hook_targets
 def hook_as_executable_units(
     hook: HookConfig,
     targets: Sequence[Target],
+    verbose: bool,
 ) -> Iterator[ExecutableUnit]:
     target_files = filter_hook_targets(hook, targets)
 
     # Skip parameterized hooks when resulting target file sequence is empty.
     if hook.parameterize and not target_files:
-        print(f"[{hook.id}] Skipped.", file=sys.stderr)
+        if verbose:
+            print(f"[{hook.id}] Skipped.", file=sys.stderr)
         return
 
     # Hook is not parameterized, yield single unit with empty file set.

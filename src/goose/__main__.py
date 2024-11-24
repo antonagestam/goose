@@ -21,9 +21,13 @@ from rich.text import Text
 from goose.backend.base import RunResult
 from goose.config import EnvironmentId
 from goose.config import HookConfig
+from goose.git.pre_push import PushDelete
+from goose.git.pre_push import parse_push_events
+from goose.git.pre_push import pre_push_hook
 
 from . import __version__
 from .asyncio import asyncio_entrypoint
+from .context import Context
 from .context import gather_context
 from .environment import Environment
 from .environment import InitialState
@@ -31,13 +35,15 @@ from .environment import NeedsFreeze
 from .environment import SyncedState
 from .environment import UninitializedState
 from .environment import prepare_environment
+from .git.pre_push import get_paths_for_event
 from .orphan_environments import probe_orphan_environments
 from .scheduler import Scheduler
 from .scheduler import UnitFinished
 from .scheduler import UnitScheduled
 from .targets import Selector
 from .targets import filter_hook_targets
-from .targets import get_targets
+from .targets import get_targets_from_paths
+from .targets import select_targets
 
 ConfigOption: TypeAlias = Annotated[
     Path,
@@ -167,23 +173,15 @@ def print_summary(console: Console, scheduler: Scheduler) -> None:
     console.print("All ok!", style="green")
 
 
-@cli.command()
-@asyncio_entrypoint
-async def run(
-    selected_hook: Optional[str] = typer.Argument(default=None),  # noqa
-    config_path: ConfigOption = default_config,
-    delete_orphan_environments: bool = False,
-    select: Selector = typer.Option(default="diff"),
-    verbose: bool = False,
+async def _run_goose(
+    context: Context,
+    console: Console,
+    scheduler: Scheduler,
+    verbose: bool,
 ) -> None:
-    console = Console(stderr=True)
-    ctx = gather_context(config_path)
-
-    probe_orphan_environments(ctx, delete=delete_orphan_environments)
-
     prepare_tasks = [
-        asyncio.create_task(prepare_environment(environment))
-        for environment in ctx.environments.values()
+        asyncio.create_task(prepare_environment(environment, verbose=verbose))
+        for environment in context.environments.values()
     ]
     done, pending = await asyncio.wait(
         prepare_tasks,
@@ -199,14 +197,8 @@ async def run(
             )
             sys.exit(1)
 
-    print("All environments ready", file=sys.stderr)
-
-    scheduler = Scheduler(
-        context=ctx,
-        targets=await get_targets(ctx.config, select),
-        selected_hook=selected_hook,
-        verbose=verbose,
-    )
+    if verbose:
+        console.print("All environments ready", style="green")
 
     if sys.stdout.isatty():
         await display_live_table(scheduler)
@@ -215,19 +207,45 @@ async def run(
             if not verbose:
                 continue
             elif isinstance(event, UnitScheduled):
-                print(
+                console.print(
                     f"{event.unit.log_prefix}Unit scheduled",
-                    file=sys.stderr,
+                    style="dim",
                 )
             elif isinstance(event, UnitFinished):
-                print(
+                console.print(
                     f"{event.unit.log_prefix}Unit finished: {event.result.name}",
-                    file=sys.stderr,
+                    style="dim",
                 )
             else:
                 assert_never(event)
 
     print_summary(console, scheduler)
+
+
+@cli.command()
+@asyncio_entrypoint
+async def run(
+    selected_hook: Optional[str] = typer.Argument(default=None),  # noqa
+    config_path: ConfigOption = default_config,
+    delete_orphan_environments: bool = False,
+    select: Selector = typer.Option(default="diff"),
+    verbose: bool = False,
+) -> None:
+    console = Console(stderr=True)
+    context = gather_context(config_path)
+    probe_orphan_environments(context, delete=delete_orphan_environments)
+    scheduler = Scheduler(
+        context=context,
+        targets=await select_targets(context.config, select),
+        selected_hook=selected_hook,
+        verbose=verbose,
+    )
+    await _run_goose(
+        context=context,
+        console=console,
+        scheduler=scheduler,
+        verbose=verbose,
+    )
 
 
 @cli.command()
@@ -300,21 +318,13 @@ async def select(
         )
         return
 
-    targets = await get_targets(ctx.config, select)
+    targets = await select_targets(ctx.config, select)
     target_files = filter_hook_targets(hook, targets)
     for file in target_files:
         console.print(file)
 
 
-template = """\
-#!/usr/bin/env bash
-set -euo pipefail
-goose run '--config={config_path}'
-"""
-
-
 class GitHookType(enum.Enum):
-    pre_commit = "pre-commit"
     pre_push = "pre-push"
 
 
@@ -324,12 +334,68 @@ async def git_hook(
     hook: GitHookType,
     config_path: ConfigOption = default_config,
 ) -> None:
+    console = Console(stderr=True)
+
     hooks_path = Path(".git/hooks")
     assert hooks_path.exists()
     assert hooks_path.is_dir()
     hook_path = hooks_path / hook.value
+
+    if hook_path.exists():
+        console.print(
+            (
+                f"Hook already exists at {hook_path}, refusing to overwrite it. "
+                f"If you are sure to delete the existing hook, you can do so manually "
+                f"before rerunning this command."
+            ),
+            style="red",
+        )
+        raise typer.Exit(1)
+
+    if hook is GitHookType.pre_push:
+        template = pre_push_hook
+    else:
+        assert_never(hook)
+
     hook_path.write_text(template.format(config_path=str(config_path)))
     hook_path.chmod(0o755)
+
+    console.print(
+        f"Installed {hook.value} hook to {hook_path}.",
+        style="green",
+    )
+
+
+@cli.command()
+@asyncio_entrypoint
+async def exec_pre_push(
+    remote: str,
+    url: str,
+    config_path: ConfigOption = default_config,
+    verbose: bool = False,
+) -> None:
+    context = gather_context(config_path)
+    console = Console(stderr=True)
+
+    paths: set[Path] = set()
+    for event in parse_push_events(sys.stdin):
+        if isinstance(event, PushDelete):
+            continue
+        paths |= await get_paths_for_event(remote, event)
+
+    targets = get_targets_from_paths(context.config, paths)
+    scheduler = Scheduler(
+        context=context,
+        targets=targets,
+        selected_hook=None,
+        verbose=verbose,
+    )
+    await _run_goose(
+        context=context,
+        console=console,
+        scheduler=scheduler,
+        verbose=verbose,
+    )
 
 
 def version_callback(print_version: bool) -> None:

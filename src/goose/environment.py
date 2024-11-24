@@ -266,6 +266,7 @@ def build_environments(
 async def prepare_environment(
     environment: Environment,
     upgrade: bool = False,
+    verbose: bool = False,
 ) -> None:
     log_prefix = f"[{environment.config.id}] "
 
@@ -284,7 +285,7 @@ async def prepare_environment(
         print(f"{log_prefix}Bootstrapping environment ...", file=sys.stderr)
         await environment.bootstrap()
         print(f"{log_prefix}Bootstrapping done.", file=sys.stderr)
-    else:
+    elif verbose:
         print(
             f"{log_prefix}Found previously bootstrapped environment.",
             file=sys.stderr,
@@ -297,14 +298,14 @@ async def prepare_environment(
     elif environment.check_should_freeze():
         print(f"{log_prefix}Missing lock files.", file=sys.stderr)
         raise NeedsFreeze
-    else:
+    elif verbose:
         print(f"{log_prefix}Found existing lock files up-to-date.", file=sys.stderr)
 
     if environment.check_should_sync():
         print(f"{log_prefix}Syncing dependencies ...", file=sys.stderr)
         await environment.sync()
         print(f"{log_prefix}Syncing done.", file=sys.stderr)
-    else:
+    elif verbose:
         print(
             f"{log_prefix}Found dependencies up-to-date.",
             file=sys.stderr,
