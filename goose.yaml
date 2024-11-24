@@ -7,6 +7,7 @@ environments:
       - ruff
       - pre-commit-hooks
       - pip-audit
+      - check-jsonschema
 
   - id: node
     ecosystem:
@@ -103,3 +104,12 @@ hooks:
     command: ruff
     args: [format, --force-exclude]
     types: [python]
+
+  - id: check-github-workflows
+    environment: python
+    command: check-jsonschema
+    read_only: true
+    args: ["--builtin-schema", "vendor.github-workflows"]
+    types: [yaml]
+    limit:
+      - "^.github/workflows/"
