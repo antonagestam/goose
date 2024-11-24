@@ -58,6 +58,7 @@ goose = "goose.__main__:cli"
 [project.optional-dependencies]
 test = [
   "pytest",
+  "pytest-asyncio",
 ]
 docs = [
   "mkdocs",
@@ -95,3 +96,8 @@ warn_unreachable = true
 
 [tool.check-manifest]
 ignore = ["src/goose/_version.py"]
+
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+add_opts = "--import-mode=importlib"
