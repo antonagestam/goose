@@ -616,9 +616,9 @@ six==1.16.0 \
     --hash=sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926 \
     --hash=sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254
     # via python-dateutil
-typer==0.13.1 \
-    --hash=sha256:5b59580fd925e89463a29d363e0a43245ec02765bde9fb77d39e5d0f29dd7157 \
-    --hash=sha256:9d444cb96cc268ce6f8b94e13b4335084cef4c079998a9f4851a90229a3bd25c
+typer==0.14.0 \
+    --hash=sha256:af58f737f8d0c0c37b9f955a6d39000b9ff97813afcbeef56af5e37cf743b45a \
+    --hash=sha256:f476233a25770ab3e7b2eebf7c68f3bc702031681a008b20167573a4b7018f09
     # via
     #   -c requirements.txt
     #   git-goose (pyproject.toml)
