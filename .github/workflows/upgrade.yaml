@@ -1,0 +1,58 @@
+# This is a reusable workflow that's meant to be the canonical way of upgrading goose
+# dependencies in Github Actions workflows. See README for an example of how to use this
+# in your workflows.
+#
+# This workflow requires allowing GitHub Actions to create and approve pull requests
+# in your repository's Actions settings.
+
+on:
+  workflow_call: {}
+
+env:
+  PYTHON_VERSION: "3.13"
+  COLUMNS: "120"
+  FORCE_COLOR: "1"
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  goose-upgrade:
+    name: Upgrade goose dependencies
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.13
+          cache: pip
+          check-latest: true
+      - name: Set up git branch and config
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git checkout -b "${{ github.actor }}/chore/bump-goose-deps"
+      - name: goose cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/goose
+          key: "${{ runner.os }}-goose-${{ env.PYTHON_VERSION }}-${{ hashFiles('.goose/**/manifest.json') }}"
+          restore-keys: |
+            ${{ runner.os }}-goose-${{ env.PYTHON_VERSION }}
+            ${{ runner.os }}-goose
+      - run: pip install --upgrade git-goose
+      - run: goose upgrade
+      - run: git add .goose
+      - run: >-
+          git commit --message='chore: Bump goose dependencies'
+      - run: git show HEAD
+      - run: git push origin "${{ github.actor }}/chore/bump-goose-deps" --force
+      - name: Create pull request
+        run: >-
+          gh pr create
+          --base=${{ github.base_ref || github.ref_name }}
+          --head=${{ github.actor }}/chore/bump-goose-deps
+          --fill
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
