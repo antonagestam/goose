@@ -1,0 +1,14 @@
+name: Bump
+on:
+  workflow_dispatch: {}
+  schedule:
+    # Trigger first of every month.
+    - cron: "30 12 1 * *"
+
+jobs:
+  goose-bump:
+    name: Bump goose dependencies
+    uses: "./.github/workflows/upgrade.yaml"
+    permissions:
+      contents: write
+      pull-requests: write
