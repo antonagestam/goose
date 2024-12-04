@@ -109,7 +109,7 @@ hooks:
     environment: python
     command: check-jsonschema
     read_only: true
-    args: ["--builtin-schema", "vendor.github-workflows", "--verbose"]
+    args: ["--builtin-schema", "vendor.github-workflows"]
     types: [yaml]
     limit:
       - "^.github/workflows/"
