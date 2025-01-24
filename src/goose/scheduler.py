@@ -41,7 +41,7 @@ class Scheduler:
         verbose: bool,
     ) -> None:
         self._context: Final = context
-        self._max_running: Final = os.process_cpu_count() or 2  # type: ignore[attr-defined]
+        self._max_running: Final = os.process_cpu_count() or 2
         self._units: Final = {
             hook: tuple(hook_as_executable_units(hook, targets, verbose))
             for hook in context.config.hooks

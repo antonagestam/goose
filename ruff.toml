@@ -38,6 +38,8 @@ extend-ignore = [
   "UP040",
   # Bad advise.
   "PLR0911",
+  # False positives.
+  "A005",
 ]
 
 [lint.isort]
