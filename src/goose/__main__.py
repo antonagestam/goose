@@ -22,8 +22,8 @@ from goose.backend.base import RunResult
 from goose.config import EnvironmentId
 from goose.config import HookConfig
 from goose.git.pre_push import PushDelete
+from goose.git.pre_push import format_pre_push_hook
 from goose.git.pre_push import parse_push_events
-from goose.git.pre_push import pre_push_hook
 
 from . import __version__
 from .asyncio import asyncio_entrypoint
@@ -353,11 +353,11 @@ async def git_hook(
         raise typer.Exit(1)
 
     if hook is GitHookType.pre_push:
-        template = pre_push_hook
+        template = format_pre_push_hook
     else:
         assert_never(hook)
 
-    hook_path.write_text(template.format(config_path=str(config_path)))
+    hook_path.write_text(template(config_path=config_path))
     hook_path.chmod(0o755)
 
     console.print(
