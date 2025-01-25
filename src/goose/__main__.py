@@ -401,7 +401,9 @@ async def exec_pre_push(
 def version_callback(print_version: bool) -> None:
     if not print_version:
         return
-    print(f"goose version {__version__}")
+    console = Console()
+    console.print(f"goose version {__version__}", style="green")
+    console.print(f"{sys.executable=!r}", style="dim")
     raise typer.Exit()
 
 
