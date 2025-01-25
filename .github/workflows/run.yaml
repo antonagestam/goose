@@ -32,3 +32,4 @@ jobs:
             ${{ runner.os }}-goose
       - run: pip install --upgrade git-goose
       - run: goose run --select=all --delete-orphan-environments
+      - run: git diff
