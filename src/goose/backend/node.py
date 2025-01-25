@@ -75,7 +75,8 @@ def _write_package_json(
             for dependency in config.dependencies
         }
     )
-    package_json_path.write_text(package_json.model_dump_json(by_alias=True))
+    with package_json_path.open("w") as fd:
+        print(package_json.model_dump_json(by_alias=True), file=fd)
     return package_json_path
 
 

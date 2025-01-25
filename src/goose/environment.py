@@ -68,7 +68,8 @@ def read_state(env_dir: Path) -> State:
 
 def write_state(env_dir: Path, state: SyncedState | InitialState) -> None:
     state_file = env_dir / "goose-state.json"
-    state_file.write_text(state.model_dump_json())
+    with state_file.open("w") as fd:
+        print(state.model_dump_json(), file=fd)
 
 
 @final
