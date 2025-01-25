@@ -357,7 +357,8 @@ async def git_hook(
     else:
         assert_never(hook)
 
-    hook_path.write_text(template(config_path=config_path))
+    with hooks_path.open("w") as fd:
+        print(template(config_path=config_path), file=fd)
     hook_path.chmod(0o755)
 
     console.print(
