@@ -1,12 +1,14 @@
 import asyncio
 import enum
+import shlex
+import sys
+import textwrap
 from collections.abc import AsyncGenerator
 from collections.abc import Generator
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import IO
-from typing import Final
 from typing import assert_never
 from typing import final
 
@@ -14,12 +16,23 @@ from goose.process import stream_out
 from goose.targets import base_diff_command
 from goose.targets import stream_paths_from_process
 
-pre_push_hook: Final = """\
-#!/bin/sh
-set -e
-PYTHONUNBUFFERED=1
-goose exec-pre-push $@ < /dev/stdin
-"""
+
+def format_pre_push_hook(
+    config_path: Path,
+    _executable: str = sys.executable,
+) -> str:
+    escaped_config_path = shlex.quote(str(config_path))
+    escaped_executable = shlex.quote(_executable)
+    return textwrap.dedent(
+        f"""\
+        #!/bin/sh
+        set -e
+        export PYTHONUNBUFFERED=1
+        PY={escaped_executable}
+        CONFIG={escaped_config_path}
+        "$PY" -m goose exec-pre-push --config "$CONFIG" $@ < /dev/stdin
+        """
+    )
 
 
 class ObjectHashSentinel(enum.Enum):
