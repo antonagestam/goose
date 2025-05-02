@@ -28,7 +28,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
       /app-src \
  && uv pip check --python=/venv/bin/python
 
-FROM python:3.13.2-slim-bookworm AS final
+FROM python:3.13.3-slim-bookworm AS final
 
 ARG UID="1000"
 ARG GID="1000"
