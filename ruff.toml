@@ -40,6 +40,11 @@ extend-ignore = [
   "PLR0911",
   # False positives.
   "A005",
+  # Comprehensions are readable, expressive, and obviouos. A niche method call is not
+  # obvious.
+  "C420",
+  # False positives, for example with Pydantic models. No dangerous consequences.
+  "PLW1641",
 ]
 
 [lint.isort]
