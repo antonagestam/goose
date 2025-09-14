@@ -1,21 +1,11 @@
-<!-- prettier-ignore-start -->
-<!-- https://github.com/prettier/prettier/issues/15479 -->
+<h1 align=center>goose<br>💻🪿</h1>
 
-> [!NOTE]
-> This project is in its infancy. Please try it out and report and help fix any issues or missing features, but expect a somewhat broken experience.
->
-> Breaking CLI changes is to be expected without notice between arbitrary versions until version 1.0 is released.
+<h3 align=center>A <i>picky</i> and <i>eager</i> <a href=https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks>Git hook</a> runner</h3>
 
-<!-- prettier-ignore-end -->
-
-<h1 align=center>goose<br>🦆🧪💻</h1>
-
-<p align=center>A <i>picky</i> and <i>eager</i> <a href=https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks>Git hook</a> runner.</p>
-
-- 🔒 Reproducible builds.
-- ⚡ Dynamic parallelism.
-- 💨 Small file-system footprint.
-- 🏃 Fast Python dependency management thanks to [uv].
+- 🔒 **Reproducible builds**
+- ⚡ **Dynamic parallelism**
+- 💨 **Small file-system footprint**
+- 🏃 **Fast Python dependency management thanks to [uv]**
 
 [uv]: https://github.com/astral-sh/uv
 
