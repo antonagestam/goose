@@ -1,11 +1,16 @@
 import asyncio
 import os
+import platform
 from pathlib import Path
 from typing import IO
 from typing import Final
 
 from goose.backend.base import Backend
+from goose.backend.base import InitialStage
+from goose.backend.base import InitialState
 from goose.backend.base import RunResult
+from goose.backend.base import SyncedStage
+from goose.backend.base import SyncedState
 from goose.config import EnvironmentConfig
 from goose.executable_unit import ExecutableUnit
 from goose.manifest import LockManifest
@@ -16,29 +21,47 @@ from goose.process import stream_both
 async def bootstrap(
     env_path: Path,
     config: EnvironmentConfig,
-) -> None:
+) -> InitialState:
     env_path.mkdir(exist_ok=True)
+    return InitialState(
+        stage=InitialStage.bootstrapped,
+        ecosystem=config.ecosystem,
+        bootstrapped_version=f"{platform.system()}-{platform.release()}",
+    )
 
 
 async def freeze(
     env_path: Path,
     config: EnvironmentConfig,
     lock_files_path: Path,
-) -> LockManifest:
-    return build_manifest(
+) -> tuple[InitialState, LockManifest]:
+    state = InitialState(
+        stage=InitialStage.frozen,
+        ecosystem=config.ecosystem,
+        bootstrapped_version=f"{platform.system()}-{platform.release()}",
+    )
+    manifest = build_manifest(
         source_ecosystem=config.ecosystem,
         source_dependencies=config.dependencies,
         lock_files=(),
         lock_files_path=lock_files_path,
+        ecosystem_version=state.bootstrapped_version,
     )
+    return state, manifest
 
 
 async def sync(
     env_path: Path,
     config: EnvironmentConfig,
     lock_files_path: Path,
-) -> None:
-    pass
+    manifest: LockManifest,
+) -> SyncedState:
+    return SyncedState(
+        stage=SyncedStage.synced,
+        checksum=manifest.checksum,
+        ecosystem=config.ecosystem,
+        bootstrapped_version=f"{platform.system()}-{platform.release()}",
+    )
 
 
 async def run(

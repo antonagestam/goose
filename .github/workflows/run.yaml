@@ -10,6 +10,7 @@ env:
   COLUMNS: "120"
   FORCE_COLOR: "1"
   PYTHONUNBUFFERED: "1"
+  CACHE_VERSION: "1"
 
 jobs:
   goose-run:
@@ -26,10 +27,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/goose
-          key: "${{ runner.os }}-goose-${{ env.PYTHON_VERSION }}-${{ hashFiles('.goose/**/manifest.json') }}"
+          key: "${{ runner.os }}-goose-${{ env.CACHE_VERSION }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('.goose/**/manifest.json') }}"
           restore-keys: |
-            ${{ runner.os }}-goose-${{ env.PYTHON_VERSION }}
-            ${{ runner.os }}-goose
+            ${{ runner.os }}-goose-${{ env.CACHE_VERSION }}-${{ env.PYTHON_VERSION }}
+            ${{ runner.os }}-goose-${{ env.CACHE_VERSION }}
       - run: pip install --upgrade git-goose
       - run: goose run --select=all --delete-orphan-environments
       - run: git diff

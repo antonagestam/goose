@@ -1,5 +1,4 @@
 import asyncio
-import enum
 import io
 import os
 import shutil
@@ -14,15 +13,19 @@ from pydantic import RootModel
 
 from goose.git.status import get_git_status
 
-from ._utils.pydantic import BaseModel
+from .backend.base import InitialState
 from .backend.base import RunResult
+from .backend.base import State
+from .backend.base import SyncedState
+from .backend.base import UninitializedState
 from .backend.index import load_backend
 from .config import Config
-from .config import EcosystemConfig
 from .config import EnvironmentConfig
 from .config import EnvironmentId
 from .executable_unit import ExecutableUnit
+from .manifest import EnvironmentState
 from .manifest import LockFileState
+from .manifest import check_environment_state
 from .manifest import check_lock_files
 from .manifest import read_manifest
 from .manifest import write_manifest
@@ -30,31 +33,6 @@ from .manifest import write_manifest
 
 class NeedsFreeze(Exception): ...
 
-
-class InitialStage(enum.Enum):
-    bootstrapped = "bootstrapped"
-    frozen = "frozen"
-
-
-class SyncedStage(enum.Enum):
-    synced = "synced"
-
-
-class SyncedState(BaseModel):
-    stage: SyncedStage
-    checksum: str
-    ecosystem: EcosystemConfig
-
-
-class InitialState(BaseModel):
-    stage: InitialStage
-    ecosystem: EcosystemConfig
-
-
-class UninitializedState: ...
-
-
-type State = SyncedState | InitialState | UninitializedState
 
 _PersistedState = RootModel[SyncedState | InitialState]
 
@@ -95,7 +73,25 @@ class Environment:
     def check_should_teardown(self) -> bool:
         if isinstance(self.state, UninitializedState):
             return False
-        return self.config.ecosystem != self.state.ecosystem
+        environment_state = check_environment_state(
+            lock_files_path=self.lock_files_path,
+            config=self.config,
+            state_ecosystem=self.state.ecosystem,
+            bootstrapped_version=self.state.bootstrapped_version,
+        )
+
+        if (
+            environment_state is EnvironmentState.config_state_mismatch
+            or environment_state is EnvironmentState.manifest_state_mismatch
+        ):
+            return True
+        elif (
+            environment_state is EnvironmentState.matching
+            or environment_state is EnvironmentState.config_manifest_mismatch
+        ):
+            return False
+        else:
+            assert_never(environment_state)
 
     def check_should_bootstrap(self) -> bool:
         if isinstance(self.state, UninitializedState):
@@ -175,42 +171,30 @@ class Environment:
         self.state = UninitializedState()
 
     async def bootstrap(self) -> None:
-        await self._backend.bootstrap(
+        self.state = await self._backend.bootstrap(
             env_path=self._path,
             config=self.config,
-        )
-        self.state = InitialState(
-            stage=InitialStage.bootstrapped,
-            ecosystem=self.config.ecosystem,
         )
         write_state(self._path, self.state)
 
     async def freeze(self) -> None:
         self.lock_files_path.mkdir(exist_ok=True)
-        manifest = await self._backend.freeze(
+        self.state, manifest = await self._backend.freeze(
             env_path=self._path,
             config=self.config,
             lock_files_path=self.lock_files_path,
         )
         write_manifest(self.lock_files_path, manifest)
-        self.state = InitialState(
-            stage=InitialStage.frozen,
-            ecosystem=self.config.ecosystem,
-        )
         write_state(self._path, self.state)
         os.sync()
 
     async def sync(self) -> None:
         manifest = read_manifest(self.lock_files_path)
-        await self._backend.sync(
+        self.state = await self._backend.sync(
             env_path=self._path,
             config=self.config,
             lock_files_path=self.lock_files_path,
-        )
-        self.state = SyncedState(
-            stage=SyncedStage.synced,
-            checksum=manifest.checksum,
-            ecosystem=self.config.ecosystem,
+            manifest=manifest,
         )
         write_state(self._path, self.state)
 

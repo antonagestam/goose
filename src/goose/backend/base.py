@@ -7,9 +7,40 @@ from typing import IO
 from typing import Protocol
 from typing import final
 
+from pydantic import BaseModel
+
+from goose.config import EcosystemConfig
 from goose.config import EnvironmentConfig
 from goose.executable_unit import ExecutableUnit
 from goose.manifest import LockManifest
+
+
+class InitialStage(enum.Enum):
+    bootstrapped = "bootstrapped"
+    frozen = "frozen"
+
+
+class SyncedStage(enum.Enum):
+    synced = "synced"
+
+
+class SyncedState(BaseModel):
+    stage: SyncedStage
+    checksum: str
+    ecosystem: EcosystemConfig
+    bootstrapped_version: str
+
+
+class InitialState(BaseModel):
+    stage: InitialStage
+    ecosystem: EcosystemConfig
+    bootstrapped_version: str
+
+
+class UninitializedState: ...
+
+
+type State = SyncedState | InitialState | UninitializedState
 
 
 class Bootstrap(Protocol):
@@ -18,7 +49,7 @@ class Bootstrap(Protocol):
         *,
         config: EnvironmentConfig,
         env_path: Path,
-    ) -> Awaitable[None]: ...
+    ) -> Awaitable[InitialState]: ...
 
 
 class Freeze(Protocol):
@@ -28,7 +59,7 @@ class Freeze(Protocol):
         config: EnvironmentConfig,
         env_path: Path,
         lock_files_path: Path,
-    ) -> Awaitable[LockManifest]: ...
+    ) -> Awaitable[tuple[InitialState, LockManifest]]: ...
 
 
 class Sync(Protocol):
@@ -38,7 +69,8 @@ class Sync(Protocol):
         config: EnvironmentConfig,
         env_path: Path,
         lock_files_path: Path,
-    ) -> Awaitable[None]: ...
+        manifest: LockManifest,
+    ) -> Awaitable[SyncedState]: ...
 
 
 class RunResult(enum.Enum):

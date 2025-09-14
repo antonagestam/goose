@@ -36,6 +36,7 @@ class LockManifest(BaseModel):
     source_dependencies: tuple[str, ...]
     lock_files: tuple[LockFile, ...]
     checksum: str
+    ecosystem_version: str
 
     @field_validator("source_dependencies", "lock_files")
     @classmethod
@@ -89,6 +90,7 @@ def build_manifest(
     source_dependencies: Iterable[str],
     lock_files: Iterable[Path],
     lock_files_path: Path,
+    ecosystem_version: str,
 ) -> LockManifest:
     lock_file_instances = tuple(
         sorted(read_lock_file(lock_files_path, path) for path in lock_files)
@@ -98,6 +100,7 @@ def build_manifest(
         source_dependencies=tuple(sorted(source_dependencies)),
         lock_files=lock_file_instances,
         checksum=_get_accumulated_checksum(lock_file_instances),
+        ecosystem_version=ecosystem_version,
     )
 
 
@@ -155,3 +158,30 @@ def check_lock_files(
         return LockFileState.state_manifest_mismatch
 
     return LockFileState.matching
+
+
+class EnvironmentState(enum.Enum):
+    config_manifest_mismatch = enum.auto()
+    config_state_mismatch = enum.auto()
+    manifest_state_mismatch = enum.auto()
+    matching = enum.auto()
+
+
+def check_environment_state(
+    lock_files_path: Path,
+    config: EnvironmentConfig,
+    state_ecosystem: EcosystemConfig,
+    bootstrapped_version: str,
+) -> EnvironmentState:
+    try:
+        manifest = read_manifest(lock_files_path)
+    except FileNotFoundError:
+        return EnvironmentState.config_manifest_mismatch
+
+    if manifest.ecosystem_version != bootstrapped_version:
+        return EnvironmentState.manifest_state_mismatch
+
+    if config.ecosystem != state_ecosystem:
+        return EnvironmentState.config_state_mismatch
+
+    return EnvironmentState.matching

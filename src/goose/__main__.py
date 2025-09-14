@@ -271,10 +271,12 @@ async def environment(
             console.print("  state: initial")
             console.print(f"  state.stage: {state.stage.value}")
             console.print(f"  state.ecosystem: {state.ecosystem}")
+            console.print(f"  state.bootstrapped_version: {state.bootstrapped_version}")
         elif isinstance(state, SyncedState):
             console.print("  state: synced")
             console.print(f"  state.stage: {state.stage.value}")
             console.print(f"  state.ecosystem: {state.ecosystem}")
+            console.print(f"  state.bootstrapped_version: {state.bootstrapped_version}")
             console.print(f"  state.checksum: {state.checksum!r}")
 
         else:

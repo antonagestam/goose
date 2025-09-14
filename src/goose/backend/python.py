@@ -4,6 +4,7 @@ import os
 import sys
 from collections.abc import Iterable
 from contextlib import ExitStack
+from io import StringIO
 from pathlib import Path
 from typing import IO
 from typing import Final
@@ -13,10 +14,15 @@ from goose.executable_unit import ExecutableUnit
 from goose.manifest import LockManifest
 from goose.manifest import build_manifest
 from goose.process import stream_both
+from goose.process import stream_out
 from goose.process import system_python
 
 from .base import Backend
+from .base import InitialStage
+from .base import InitialState
 from .base import RunResult
+from .base import SyncedStage
+from .base import SyncedState
 
 
 def _venv_python(env_path: Path) -> Path:
@@ -49,6 +55,38 @@ async def _create_virtualenv(env_path: Path, version: str) -> None:
     await process.wait()
     if process.returncode != 0:
         raise RuntimeError("Failed creating virtualenv {process.returncode=}")
+
+
+async def _spawn_version_process(env_path: Path) -> asyncio.subprocess.Process:
+    return await asyncio.create_subprocess_exec(
+        _venv_python(env_path),
+        "--version",
+        env=_bootstrap_env(),
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+
+
+async def _gather_version_process(
+    process: asyncio.subprocess.Process,
+    configured_version: str,
+) -> str:
+    version_buffer = StringIO()
+    assert process.stdout is not None
+    assert process.stderr is not None
+    stream_stderr = stream_out(f"{process}[stderr]", process.stderr, sys.stderr)
+    capture_stdout = stream_out("", process.stdout, version_buffer)
+    await asyncio.gather(stream_stderr, capture_stdout)
+    await process.wait()
+    if process.returncode != 0:
+        raise RuntimeError(f"Failed getting version from venv {process.returncode=}")
+    ecosystem_version = version_buffer.getvalue().strip().removeprefix("Python ")
+    if not ecosystem_version.startswith(configured_version):
+        raise RuntimeError(
+            f"Resulting version of venv ({ecosystem_version}) does not match "
+            f"environment config ({configured_version})"
+        )
+    return ecosystem_version
 
 
 async def _pip_install(
@@ -96,18 +134,29 @@ async def _pip_sync(
 async def bootstrap(
     env_path: Path,
     config: EnvironmentConfig,
-) -> None:
+) -> InitialState:
     print(f"Creating virtualenv {env_path.name}", file=sys.stderr)
     await _create_virtualenv(env_path, config.ecosystem.version)
+    bootstrapped_version = await _gather_version_process(
+        await _spawn_version_process(env_path), config.ecosystem.version
+    )
+
+    return InitialState(
+        stage=InitialStage.bootstrapped,
+        ecosystem=config.ecosystem,
+        bootstrapped_version=bootstrapped_version,
+    )
 
 
 async def freeze(
     env_path: Path,
     config: EnvironmentConfig,
     lock_files_path: Path,
-) -> LockManifest:
+) -> tuple[InitialState, LockManifest]:
     tmp_requirements_in = lock_files_path / "requirements.in"
     requirements_txt = lock_files_path / "requirements.txt"
+
+    version_process = await _spawn_version_process(env_path)
 
     with ExitStack() as stack:
         stack.callback(tmp_requirements_in.unlink, missing_ok=True)
@@ -117,7 +166,7 @@ async def freeze(
             for dependency in config.dependencies:
                 print(dependency, file=fd)
 
-        process = await asyncio.create_subprocess_exec(
+        compile_process = await asyncio.create_subprocess_exec(
             system_python(),
             "-m",
             "uv",
@@ -135,30 +184,54 @@ async def freeze(
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
-        await stream_both(process)
-        await process.wait()
+        await stream_both(compile_process)
+        await compile_process.wait()
 
-    if process.returncode != 0:
-        raise RuntimeError(f"Failed freezing dependencies {process.returncode=}")
+    if compile_process.returncode != 0:
+        raise RuntimeError(
+            f"Failed freezing dependencies {compile_process.returncode=}"
+        )
 
-    return build_manifest(
+    bootstrapped_version = await _gather_version_process(
+        version_process, config.ecosystem.version
+    )
+
+    state = InitialState(
+        stage=InitialStage.frozen,
+        ecosystem=config.ecosystem,
+        bootstrapped_version=bootstrapped_version,
+    )
+    manifest = build_manifest(
         source_ecosystem=config.ecosystem,
         source_dependencies=config.dependencies,
         lock_files=(requirements_txt,),
         lock_files_path=lock_files_path,
+        ecosystem_version=bootstrapped_version,
     )
+    return state, manifest
 
 
 async def sync(
     env_path: Path,
     config: EnvironmentConfig,
     lock_files_path: Path,
-) -> None:
+    manifest: LockManifest,
+) -> SyncedState:
     requirements_txt = lock_files_path / "requirements.txt"
-
+    version_process = await _spawn_version_process(env_path)
     await _pip_sync(
         env_path=env_path,
         requirements_txt=requirements_txt,
+    )
+    bootstrapped_version = await _gather_version_process(
+        version_process,
+        config.ecosystem.version,
+    )
+    return SyncedState(
+        stage=SyncedStage.synced,
+        checksum=manifest.checksum,
+        ecosystem=config.ecosystem,
+        bootstrapped_version=bootstrapped_version,
     )
 
 
