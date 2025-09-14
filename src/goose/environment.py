@@ -171,9 +171,15 @@ class Environment:
         self.state = UninitializedState()
 
     async def bootstrap(self) -> None:
+        try:
+            manifest = read_manifest(self.lock_files_path)
+        except FileNotFoundError:
+            manifest = None
+
         self.state = await self._backend.bootstrap(
             env_path=self._path,
             config=self.config,
+            manifest=manifest,
         )
         write_state(self._path, self.state)
 

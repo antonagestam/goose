@@ -49,6 +49,7 @@ class Bootstrap(Protocol):
         *,
         config: EnvironmentConfig,
         env_path: Path,
+        manifest: LockManifest | None,
     ) -> Awaitable[InitialState]: ...
 
 

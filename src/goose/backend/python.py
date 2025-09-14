@@ -37,7 +37,7 @@ def _bootstrap_env() -> dict[str, str]:
     }
 
 
-async def _create_virtualenv(env_path: Path, version: str) -> None:
+async def _create_virtualenv(env_path: Path, version: str | None) -> None:
     process = await asyncio.create_subprocess_exec(
         system_python(),
         "-m",
@@ -45,7 +45,7 @@ async def _create_virtualenv(env_path: Path, version: str) -> None:
         "venv",
         "--no-project",
         "--python-preference=only-managed",
-        f"--python={version}",
+        *([f"--python={version}"] if version is not None else []),
         str(env_path),
         env=_bootstrap_env(),
         stdout=asyncio.subprocess.PIPE,
@@ -69,7 +69,7 @@ async def _spawn_version_process(env_path: Path) -> asyncio.subprocess.Process:
 
 async def _gather_version_process(
     process: asyncio.subprocess.Process,
-    configured_version: str,
+    configured_version: str | None,
 ) -> str:
     version_buffer = StringIO()
     assert process.stdout is not None
@@ -81,7 +81,9 @@ async def _gather_version_process(
     if process.returncode != 0:
         raise RuntimeError(f"Failed getting version from venv {process.returncode=}")
     ecosystem_version = version_buffer.getvalue().strip().removeprefix("Python ")
-    if not ecosystem_version.startswith(configured_version):
+    if configured_version is not None and not ecosystem_version.startswith(
+        configured_version
+    ):
         raise RuntimeError(
             f"Resulting version of venv ({ecosystem_version}) does not match "
             f"environment config ({configured_version})"
@@ -134,9 +136,18 @@ async def _pip_sync(
 async def bootstrap(
     env_path: Path,
     config: EnvironmentConfig,
+    manifest: LockManifest | None,
 ) -> InitialState:
-    print(f"Creating virtualenv {env_path.name}", file=sys.stderr)
-    await _create_virtualenv(env_path, config.ecosystem.version)
+    if manifest is None:
+        # fixme: should call `uv python upgrade [request_version]` here!
+        version = config.ecosystem.version
+    else:
+        version = manifest.ecosystem_version
+
+    print(
+        f"Creating virtualenv {env_path.name} with version {version}", file=sys.stderr
+    )
+    await _create_virtualenv(env_path, version)
     bootstrapped_version = await _gather_version_process(
         await _spawn_version_process(env_path), config.ecosystem.version
     )

@@ -21,7 +21,7 @@ from ._utils.pydantic import BaseModel
 @final
 class EcosystemConfig(BaseModel):
     language: Literal["python", "node", "system"]
-    version: str
+    version: str | None = None
 
 
 EnvironmentId = NewType("EnvironmentId", str)

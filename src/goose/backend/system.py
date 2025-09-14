@@ -21,6 +21,7 @@ from goose.process import stream_both
 async def bootstrap(
     env_path: Path,
     config: EnvironmentConfig,
+    manifest: LockManifest | None,
 ) -> InitialState:
     env_path.mkdir(exist_ok=True)
     return InitialState(

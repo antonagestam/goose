@@ -110,7 +110,7 @@ def write_manifest(
 ) -> None:
     manifest_path = lock_files_path / "manifest.json"
     with manifest_path.open("w") as fd:
-        print(manifest.model_dump_json(), file=fd)
+        print(manifest.model_dump_json(exclude_none=True), file=fd)
     print(f"Wrote manifest to {manifest_path}", file=sys.stderr)
 
 

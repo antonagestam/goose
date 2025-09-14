@@ -2,6 +2,7 @@ import asyncio
 import asyncio.subprocess
 import contextlib
 import os
+import re
 import shutil
 import sys
 from collections.abc import Iterator
@@ -84,7 +85,7 @@ async def _spawn_version_process(env_path: Path) -> asyncio.subprocess.Process:
 
 async def _gather_version_process(
     process: asyncio.subprocess.Process,
-    configured_version: str,
+    configured_version: str | None,
 ) -> str:
     version_buffer = StringIO()
     assert process.stdout is not None
@@ -98,7 +99,9 @@ async def _gather_version_process(
             f"Failed getting version from node env {process.returncode=}"
         )
     ecosystem_version = version_buffer.getvalue().strip().removeprefix("v")
-    if not ecosystem_version.startswith(configured_version):
+    if configured_version is not None and not ecosystem_version.startswith(
+        configured_version
+    ):
         raise RuntimeError(
             f"Resulting version of venv ({ecosystem_version}) does not match "
             f"environment config ({configured_version})"
@@ -106,12 +109,66 @@ async def _gather_version_process(
     return ecosystem_version
 
 
+_versions_delimiter: Final = re.compile(r"[\t\n]")
+
+
+def _string_version_as_sortable(string_version: str) -> tuple[int, ...]:
+    return tuple(int(part) for part in string_version.split("."))
+
+
+def _sortable_version_as_string(sortable_version: tuple[int, ...]) -> str:
+    return ".".join(str(part) for part in sortable_version)
+
+
+async def _get_highest_matching_version(configured_version: str | None) -> str:
+    process = await asyncio.create_subprocess_exec(
+        system_python(),
+        "-m",
+        "nodeenv",
+        "--list",
+        env=_bootstrap_env(),
+        stderr=asyncio.subprocess.PIPE,
+    )
+    output_buffer = StringIO()
+    assert process.stderr is not None
+    await stream_out("", process.stderr, output_buffer)
+    await process.wait()
+    if process.returncode != 0:
+        raise RuntimeError(
+            f"Failed listing available node versions {process.returncode=}"
+        )
+    available_versions = (
+        _string_version_as_sortable(version_string)
+        for unclean_string in _versions_delimiter.split(
+            output_buffer.getvalue().strip()
+        )
+        if (version_string := unclean_string.strip())
+        if configured_version is None or version_string.startswith(configured_version)
+    )
+    try:
+        version = max(available_versions)
+    except ValueError as exception:
+        raise RuntimeError(
+            f"Found no available node versions matching {configured_version=}"
+        ) from exception
+    return _sortable_version_as_string(version)
+
+
 async def bootstrap(
     env_path: Path,
     config: EnvironmentConfig,
+    manifest: LockManifest | None,
 ) -> InitialState:
-    print(f"Creating node env at {env_path.name}", file=sys.stderr)
-    await _create_node_env(env_path, config.ecosystem.version)
+    if manifest is None:
+        version = await _get_highest_matching_version(config.ecosystem.version)
+    else:
+        version = manifest.ecosystem_version
+
+    print(
+        f"Creating node env at {env_path.name} with version {version}",
+        file=sys.stderr,
+    )
+    await _create_node_env(env_path, version)
     process = await _spawn_version_process(env_path)
     bootstrapped_version = await _gather_version_process(
         process,
