@@ -139,7 +139,7 @@ async def freeze(
         await process.wait()
 
     if process.returncode != 0:
-        raise RuntimeError("Failed freezing dependencies {process.returncode=}")
+        raise RuntimeError(f"Failed freezing dependencies {process.returncode=}")
 
     return build_manifest(
         source_ecosystem=config.ecosystem,
