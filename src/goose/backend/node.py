@@ -36,6 +36,17 @@ def _bootstrap_env() -> dict[str, str]:
     }
 
 
+def _npm_path_env(env_path: Path) -> dict[str, str]:
+    return {"PATH": f"{os.environ['PATH']}:{env_path / 'bin'}"}
+
+
+def _npm_install_env(env_path: Path) -> dict[str, str]:
+    return {
+        **_npm_path_env(env_path),
+        "NPM_CONFIG_FUND": "false",
+    }
+
+
 async def _create_node_env(env_path: Path, version: str) -> None:
     process = await asyncio.create_subprocess_exec(
         system_python(),
@@ -104,7 +115,7 @@ async def freeze(
                 "install",
                 "--package-lock-only",
             ),
-            env=os.environ | {"PATH": f"{os.environ['PATH']}:{env_path / 'bin'}"},
+            env=_npm_install_env(env_path),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -144,7 +155,7 @@ async def sync(
                 "install",
                 "--no-save",
             ),
-            env=os.environ | {"PATH": f"{os.environ['PATH']}:{env_path / 'bin'}"},
+            env=_npm_install_env(env_path),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -175,7 +186,7 @@ async def run(
         env={
             **os.environ,
             **dict(unit.hook.env_vars),
-            "PATH": f"{os.environ['PATH']}:{env_path / 'bin'}",
+            **_npm_path_env(env_path),
         },
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
