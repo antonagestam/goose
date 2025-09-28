@@ -244,10 +244,11 @@ def build_environments(
     lock_files_path: Path,
 ) -> Mapping[EnvironmentId, Environment]:
     environments = {}
-    for cfg in config.environments:
-        path = env_dir / cfg.id
-        environments[cfg.id] = Environment(
-            config=cfg,
+    for configured_environment in config.environments:
+        inferred_id = configured_environment.id
+        path = env_dir / inferred_id
+        environments[inferred_id] = Environment(
+            config=configured_environment,
             path=path,
             lock_files_path=lock_files_path,
             discovered_state=read_state(path),

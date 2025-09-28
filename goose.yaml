@@ -1,14 +1,12 @@
 environments:
-  - id: python
-    ecosystem: python
+  - ecosystem: python
     dependencies:
       - ruff
       - pre-commit-hooks
       - pip-audit
       - check-jsonschema
 
-  - id: node
-    ecosystem: node
+  - ecosystem: node
     dependencies:
       - prettier
 

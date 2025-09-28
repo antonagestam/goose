@@ -50,6 +50,22 @@ class EnvironmentConfig(BaseModel):
     ecosystem: EcosystemConfig | Language
     dependencies: tuple[str, ...]
 
+    @model_validator(mode="before")
+    @classmethod
+    def infer_id(cls, data: object) -> object:
+        if not isinstance(data, dict):
+            return data
+        if "id" in data:
+            return data
+        ecosystem = data.get("ecosystem")
+        if isinstance(ecosystem, str):
+            data["id"] = ecosystem
+        elif isinstance(ecosystem, Mapping) and isinstance(
+            (language := ecosystem.get("language")), str
+        ):
+            data["id"] = language
+        return data
+
 
 def mapping_as_items(
     value: object,

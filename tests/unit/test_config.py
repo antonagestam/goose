@@ -132,7 +132,9 @@ class TestLoadConfig:
             textwrap.dedent(
                 """\
                 environments:
-                  - id: python
+                  - ecosystem: python
+                    dependencies: []
+                  - id: specific-python
                     ecosystem:
                       language: python
                       version: "3.13"
@@ -172,6 +174,11 @@ class TestLoadConfig:
             environments=(
                 EnvironmentConfig(
                     id="python",
+                    ecosystem="python",
+                    dependencies=(),
+                ),
+                EnvironmentConfig(
+                    id="specific-python",
                     ecosystem=VersionedEcosystemConfig(
                         language="python",
                         version="3.13",
