@@ -127,6 +127,13 @@ $ git add goose.yaml .goose
 $ git commit -m 'Add goose configuration'
 ```
 
+Configure goose to run as git hook. Supported hooks are `pre-commit` and `pre-push`.
+
+```sh
+$ goose git-hook pre-commit
+$ goose git-hook pre-push
+```
+
 ### Upgrading hook versions
 
 As pinning of hook versions is handled with lock files, there's no need to change
