@@ -1,7 +1,6 @@
 environments:
   - id: python
-    ecosystem:
-      language: python
+    ecosystem: python
     dependencies:
       - ruff
       - pre-commit-hooks
@@ -9,14 +8,12 @@ environments:
       - check-jsonschema
 
   - id: node
-    ecosystem:
-      language: node
+    ecosystem: node
     dependencies:
       - prettier
 
   - id: type-check
-    ecosystem:
-      language: python
+    ecosystem: python
     dependencies:
       - mypy
       - pydantic

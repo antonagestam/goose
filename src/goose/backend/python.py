@@ -10,6 +10,7 @@ from typing import IO
 from typing import Final
 
 from goose.config import EnvironmentConfig
+from goose.config import get_ecosystem_version
 from goose.executable_unit import ExecutableUnit
 from goose.manifest import LockManifest
 from goose.manifest import build_manifest
@@ -138,18 +139,19 @@ async def bootstrap(
     config: EnvironmentConfig,
     manifest: LockManifest | None,
 ) -> InitialState:
-    if manifest is None:
+    configured_version = get_ecosystem_version(config.ecosystem)
+    version = (
         # fixme: should call `uv python upgrade [request_version]` here!
-        version = config.ecosystem.version
-    else:
-        version = manifest.ecosystem_version
+        configured_version if manifest is None else manifest.ecosystem_version
+    )
 
     print(
         f"Creating virtualenv {env_path.name} with version {version}", file=sys.stderr
     )
     await _create_virtualenv(env_path, version)
     bootstrapped_version = await _gather_version_process(
-        await _spawn_version_process(env_path), config.ecosystem.version
+        await _spawn_version_process(env_path),
+        configured_version,
     )
 
     return InitialState(
@@ -204,7 +206,8 @@ async def freeze(
         )
 
     bootstrapped_version = await _gather_version_process(
-        version_process, config.ecosystem.version
+        version_process,
+        get_ecosystem_version(config.ecosystem),
     )
 
     state = InitialState(
@@ -236,7 +239,7 @@ async def sync(
     )
     bootstrapped_version = await _gather_version_process(
         version_process,
-        config.ecosystem.version,
+        get_ecosystem_version(config.ecosystem),
     )
     return SyncedState(
         stage=SyncedStage.synced,

@@ -17,11 +17,28 @@ from pydantic_core.core_schema import ValidationInfo
 
 from ._utils.pydantic import BaseModel
 
+type Language = Literal["python", "node", "system"]
+
 
 @final
-class EcosystemConfig(BaseModel):
-    language: Literal["python", "node", "system"]
+class VersionedEcosystemConfig(BaseModel):
+    language: Language
     version: str | None = None
+
+
+type EcosystemConfig = VersionedEcosystemConfig | Language
+
+
+def get_ecosystem_version(
+    config: VersionedEcosystemConfig | Language,
+) -> str | None:
+    return config.version if isinstance(config, VersionedEcosystemConfig) else None
+
+
+def get_ecosystem_language(
+    config: VersionedEcosystemConfig | Language,
+) -> Language:
+    return config.language if isinstance(config, VersionedEcosystemConfig) else config
 
 
 EnvironmentId = NewType("EnvironmentId", str)
@@ -30,7 +47,7 @@ EnvironmentId = NewType("EnvironmentId", str)
 @final
 class EnvironmentConfig(BaseModel):
     id: EnvironmentId
-    ecosystem: EcosystemConfig
+    ecosystem: EcosystemConfig | Language
     dependencies: tuple[str, ...]
 
 

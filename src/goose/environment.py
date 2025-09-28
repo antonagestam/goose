@@ -22,6 +22,7 @@ from .backend.index import load_backend
 from .config import Config
 from .config import EnvironmentConfig
 from .config import EnvironmentId
+from .config import get_ecosystem_language
 from .executable_unit import ExecutableUnit
 from .manifest import EnvironmentState
 from .manifest import LockFileState
@@ -60,7 +61,7 @@ class Environment:
         discovered_state: State,
     ) -> None:
         self.config: Final = config
-        self._backend: Final = load_backend(config.ecosystem.language)
+        self._backend: Final = load_backend(get_ecosystem_language(config.ecosystem))
         self._path: Final = path
         self.lock_files_path: Final = lock_files_path / config.id
         # This is read initially from file-system, so we don't entirely trust

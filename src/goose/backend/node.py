@@ -17,6 +17,7 @@ from pydantic import Field
 
 from goose._utils.pydantic import BaseModel
 from goose.config import EnvironmentConfig
+from goose.config import get_ecosystem_version
 from goose.executable_unit import ExecutableUnit
 from goose.manifest import LockManifest
 from goose.manifest import build_manifest
@@ -159,8 +160,10 @@ async def bootstrap(
     config: EnvironmentConfig,
     manifest: LockManifest | None,
 ) -> InitialState:
+    configured_version = get_ecosystem_version(config.ecosystem)
+
     if manifest is None:
-        version = await _get_highest_matching_version(config.ecosystem.version)
+        version = await _get_highest_matching_version(configured_version)
     else:
         version = manifest.ecosystem_version
 
@@ -172,7 +175,7 @@ async def bootstrap(
     process = await _spawn_version_process(env_path)
     bootstrapped_version = await _gather_version_process(
         process,
-        config.ecosystem.version,
+        configured_version,
     )
     return InitialState(
         stage=InitialStage.bootstrapped,
@@ -235,7 +238,8 @@ async def freeze(
         raise RuntimeError(f"Failed freezing dependencies {process.returncode=}")
 
     bootstrapped_version = await _gather_version_process(
-        version_process, config.ecosystem.version
+        version_process,
+        get_ecosystem_version(config.ecosystem),
     )
     state = InitialState(
         stage=InitialStage.frozen,
@@ -288,7 +292,7 @@ async def sync(
 
     bootstrapped_version = await _gather_version_process(
         version_process,
-        config.ecosystem.version,
+        get_ecosystem_version(config.ecosystem),
     )
     return SyncedState(
         stage=SyncedStage.synced,

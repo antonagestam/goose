@@ -7,9 +7,9 @@ from pydantic import ValidationError
 from pydantic_core import ErrorDetails
 
 from goose.config import Config
-from goose.config import EcosystemConfig
 from goose.config import EnvironmentConfig
 from goose.config import HookConfig
+from goose.config import VersionedEcosystemConfig
 from goose.config import load_config
 from goose.config import mapping_as_items
 
@@ -138,6 +138,9 @@ class TestLoadConfig:
                       version: "3.13"
                     dependencies:
                       - ruff
+                  - id: loose-python
+                    ecosystem: python
+                    dependencies: []
                   - id: node
                     ecosystem:
                       language: node
@@ -169,15 +172,20 @@ class TestLoadConfig:
             environments=(
                 EnvironmentConfig(
                     id="python",
-                    ecosystem=EcosystemConfig(
+                    ecosystem=VersionedEcosystemConfig(
                         language="python",
                         version="3.13",
                     ),
                     dependencies=("ruff",),
                 ),
                 EnvironmentConfig(
+                    id="loose-python",
+                    ecosystem="python",
+                    dependencies=(),
+                ),
+                EnvironmentConfig(
                     id="node",
-                    ecosystem=EcosystemConfig(
+                    ecosystem=VersionedEcosystemConfig(
                         language="node",
                         version="23.0.0",
                     ),
