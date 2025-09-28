@@ -18,18 +18,16 @@ def hook_as_executable_units(
 ) -> Iterator[ExecutableUnit]:
     target_files = filter_hook_targets(hook, targets)
 
-    # Skip parameterized hooks when resulting target file sequence is empty.
-    if hook.parameterize and not target_files:
+    # Skip hooks when the target file sequence is empty.
+    if not target_files:
         if verbose:
             print(f"[{hook.id}] Skipped.", file=sys.stderr)
         return
 
     # Hook is not parameterized, yield single unit with empty file set.
-    if not target_files:
+    if not hook.parameterize:
         yield ExecutableUnit(id=0, hook=hook)
         return
-
-    assert hook.parameterize
 
     # Distribute target files over one executable unit per core.
     process_count = os.process_cpu_count() or 2

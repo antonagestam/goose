@@ -184,10 +184,6 @@ def filter_hook_targets(
     hook: HookConfig,
     targets: Sequence[Target],
 ) -> frozenset[Path]:
-    # Send empty sequence of files for non-parameterized hooks.
-    if not hook.parameterize:
-        return frozenset()
-
     path_is_included = _get_path_matcher(
         exclude=hook.exclude,
         limit=hook.limit,

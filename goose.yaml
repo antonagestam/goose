@@ -51,6 +51,7 @@ hooks:
       COLUMNS: "150"
     read_only: true
     parameterize: false
+    types: [python, pyi]
 
   - id: check-case-conflict
     environment: python
