@@ -5,7 +5,7 @@
 - 🔒 **Reproducible builds**
 - ⚡ **Dynamic parallelism**
 - 💨 **Small file-system footprint**
-- 🏃 **Fast Python dependency management thanks to [uv]**
+- 🏃 **Fast Python installs with [uv]**
 
 [uv]: https://github.com/astral-sh/uv
 
@@ -263,4 +263,34 @@ hooks:
       FORCE_COLOR: "1"
     read_only: true
     parameterize: false
+```
+
+### Terse and loose environment configs
+
+Environments can be configured less verbosely. The `id` field can be omitted and will
+then default to the name of the ecosystem language.
+
+Version can also be omitted in the configuration and will then cause the highest
+available version to be pinned when calling `goose upgrade`. Since the ecosystem version
+is pinned in the manifest regardless of whether it is specified in the config or not,
+this omitting the version from the config is not any less safe.
+
+```yaml
+environments:
+  - ecosystem: python
+    dependencies:
+      - ruff
+
+hooks:
+  - id: ruff
+    environment: python
+    command: ruff
+    args: [check, --force-exclude, --fix]
+    types: [python]
+
+  - id: ruff-format
+    environment: python
+    command: ruff
+    args: [format, --force-exclude]
+    types: [python]
 ```
