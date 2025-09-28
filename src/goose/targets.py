@@ -33,6 +33,7 @@ class Target:
 class Selector(enum.Enum):
     all = "all"
     diff = "diff"
+    staged = "staged"
 
 
 async def _nil_split_stream(stream: asyncio.StreamReader) -> AsyncGenerator[bytes]:
@@ -91,10 +92,9 @@ async def _git_file_list(selector: Selector) -> AsyncGenerator[Path]:
     if selector is Selector.all:
         command = ("git", "ls-files", "-z")
     elif selector is Selector.diff:
-        command = (
-            *base_diff_command,
-            "HEAD",
-        )
+        command = (*base_diff_command, "HEAD")
+    elif selector is Selector.staged:
+        command = (*base_diff_command, "--cached")
     else:
         assert_never(selector)
 

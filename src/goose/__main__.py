@@ -21,6 +21,7 @@ from rich.text import Text
 from goose.backend.base import RunResult
 from goose.config import EnvironmentId
 from goose.config import HookConfig
+from goose.git.pre_commit import format_pre_commit_hook
 from goose.git.pre_push import PushDelete
 from goose.git.pre_push import format_pre_push_hook
 from goose.git.pre_push import parse_push_events
@@ -328,6 +329,7 @@ async def select(
 
 class GitHookType(enum.Enum):
     pre_push = "pre-push"
+    pre_commit = "pre-commit"
 
 
 @cli.command()
@@ -356,6 +358,8 @@ async def git_hook(
 
     if hook is GitHookType.pre_push:
         template = format_pre_push_hook
+    elif hook is GitHookType.pre_commit:
+        template = format_pre_commit_hook
     else:
         assert_never(hook)
 
