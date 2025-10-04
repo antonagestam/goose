@@ -16,6 +16,29 @@ env:
   PYTHONUNBUFFERED: "1"
 
 jobs:
+  # Note: this is important to discover when Dependabot is attempting to break things.
+  # Dependabot provides PRs that break transitive version pins. Without a check like
+  # this, these breakages go unnoticed for instance for the docs requirements.
+  check-requirements:
+    name: Check requirements
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: .goose/**/manifest.json
+          check-latest: true
+      - run: >-
+          python3 -m pip install
+          --require-hashes
+          --no-dependencies
+          --requirement=requirements.txt
+          --requirement=requirements-docs.txt
+          --requirement=requirements-test.txt
+      - run: python3 -m pip check
+
   self-check:
     name: Run hooks
     runs-on: ubuntu-latest
