@@ -6,7 +6,7 @@ on:
   workflow_call: {}
 
 env:
-  PYTHON_VERSION: "3.13"
+  PYTHON_VERSION: "3.14"
   COLUMNS: "120"
   FORCE_COLOR: "1"
   PYTHONUNBUFFERED: "1"
@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
         with:
-          python-version: 3.13
+          python-version: 3.14
           cache: pip
           check-latest: true
       - name: goose cache

@@ -6,7 +6,10 @@ environments:
       - pip-audit
       - check-jsonschema
 
-  - ecosystem: node
+  - ecosystem:
+      language: node
+      # Hold back due to missing prebuilt binaries.
+      version: "24.9.0"
     dependencies:
       - prettier
 
