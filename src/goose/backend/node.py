@@ -45,7 +45,7 @@ def _bootstrap_env() -> dict[str, str]:
 
 
 def _npm_path_env(env_path: Path) -> dict[str, str]:
-    return {"PATH": f"{os.environ['PATH']}:{env_path / 'bin'}"}
+    return {"PATH": f"{env_path / 'bin'}:{os.environ['PATH']}"}
 
 
 def _npm_install_env(env_path: Path) -> dict[str, str]:
@@ -86,7 +86,7 @@ async def _spawn_version_process(env_path: Path) -> asyncio.subprocess.Process:
 
 async def _gather_version_process(
     process: asyncio.subprocess.Process,
-    configured_version: str | None,
+    requested_version: str | None,
 ) -> str:
     version_buffer = StringIO()
     assert process.stdout is not None
@@ -99,15 +99,15 @@ async def _gather_version_process(
         raise RuntimeError(
             f"Failed getting version from node env {process.returncode=}"
         )
-    ecosystem_version = version_buffer.getvalue().strip().removeprefix("v")
-    if configured_version is not None and not ecosystem_version.startswith(
-        configured_version
+    installed_version = version_buffer.getvalue().strip().removeprefix("v")
+    if requested_version is not None and not installed_version.startswith(
+        requested_version
     ):
         raise RuntimeError(
-            f"Resulting version of venv ({ecosystem_version}) does not match "
-            f"environment config ({configured_version})"
+            f"Resulting version of node env ({installed_version}) does not match "
+            f"environment config ({requested_version})"
         )
-    return ecosystem_version
+    return installed_version
 
 
 _versions_delimiter: Final = re.compile(r"[\t\n]")
@@ -172,10 +172,9 @@ async def bootstrap(
         file=sys.stderr,
     )
     await _create_node_env(env_path, version)
-    process = await _spawn_version_process(env_path)
     bootstrapped_version = await _gather_version_process(
-        process,
-        configured_version,
+        await _spawn_version_process(env_path),
+        version,
     )
     return InitialState(
         stage=InitialStage.bootstrapped,
