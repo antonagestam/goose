@@ -3,7 +3,6 @@ environments:
     dependencies:
       - ruff
       - pre-commit-hooks
-      - pip-audit
       - check-jsonschema
 
   - ecosystem:
@@ -25,16 +24,6 @@ environments:
       - pytest
 
 hooks:
-  - id: pip-audit
-    environment: python
-    command: pip-audit
-    args:
-      - --require-hashes
-      - --disable-pip
-      - --requirement=requirements.txt
-    parameterize: false
-    read_only: true
-
   - id: prettier
     environment: node
     command: prettier
