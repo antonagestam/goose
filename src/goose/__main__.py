@@ -232,7 +232,9 @@ async def run(
     select: Selector = typer.Option(default="diff"),
     verbose: bool = False,
 ) -> None:
+    print("start")
     console = Console(stderr=True)
+    console.print("console start")
     context = gather_context(config_path)
     probe_orphan_environments(context, delete=delete_orphan_environments)
     scheduler = Scheduler(
