@@ -18,10 +18,10 @@ jobs:
     steps:
       # Checkout and prepare git.
       - name: checkout gh-pages
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: gh-pages
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set git credentials
         run: |
           git config --global user.name "${{ github.actor }}"
