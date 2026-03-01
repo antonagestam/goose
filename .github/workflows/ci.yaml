@@ -51,7 +51,7 @@ jobs:
         cache-dependency-path: .goose/**/manifest.json
         check-latest: true
     - name: Environment cache
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ~/.cache/goose
         key: ${{ runner.os }}-goose-3.14-${{ hashFiles('.goose/**/manifest.json') }}
