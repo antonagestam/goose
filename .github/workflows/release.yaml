@@ -69,7 +69,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.registry }}/${{ env.image_name }}
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           context: .
           push: true
