@@ -16,6 +16,11 @@ from typing import Final
 from pydantic import Field
 
 from goose._utils.pydantic import BaseModel
+from goose.backend.base import InitialStage
+from goose.backend.base import InitialState
+from goose.backend.base import RunResult
+from goose.backend.base import SyncedStage
+from goose.backend.base import SyncedState
 from goose.config import EnvironmentConfig
 from goose.config import get_ecosystem_version
 from goose.executable_unit import ExecutableUnit
@@ -25,12 +30,7 @@ from goose.process import stream_both
 from goose.process import stream_out
 from goose.process import system_python
 
-from .base import Backend
-from .base import InitialStage
-from .base import InitialState
-from .base import RunResult
-from .base import SyncedStage
-from .base import SyncedState
+from ._version import parse_version
 
 
 class PackageJson(BaseModel):
@@ -113,14 +113,6 @@ async def _gather_version_process(
 _versions_delimiter: Final = re.compile(r"[\t\n]")
 
 
-def _string_version_as_sortable(string_version: str) -> tuple[int, ...]:
-    return tuple(int(part) for part in string_version.split("."))
-
-
-def _sortable_version_as_string(sortable_version: tuple[int, ...]) -> str:
-    return ".".join(str(part) for part in sortable_version)
-
-
 async def _get_highest_matching_version(configured_version: str | None) -> str:
     process = await asyncio.create_subprocess_exec(
         system_python(),
@@ -139,7 +131,7 @@ async def _get_highest_matching_version(configured_version: str | None) -> str:
             f"Failed listing available node versions {process.returncode=}"
         )
     available_versions = (
-        _string_version_as_sortable(version_string)
+        parse_version(version_string)
         for unclean_string in _versions_delimiter.split(
             output_buffer.getvalue().strip()
         )
@@ -152,7 +144,7 @@ async def _get_highest_matching_version(configured_version: str | None) -> str:
         raise RuntimeError(
             f"Found no available node versions matching {configured_version=}"
         ) from exception
-    return _sortable_version_as_string(version)
+    return version.format()
 
 
 async def bootstrap(
@@ -330,12 +322,3 @@ async def run(
     await process.wait()
 
     return RunResult.ok if process.returncode == 0 else RunResult.error
-
-
-backend: Final = Backend(
-    ecosystem="node",
-    bootstrap=bootstrap,
-    freeze=freeze,
-    sync=sync,
-    run=run,
-)
