@@ -3,8 +3,8 @@ FROM ghcr.io/astral-sh/uv:python3.15-trixie AS build
 ARG RELEASE_VERSION="dev"
 ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_GIT_GOOSE=$RELEASE_VERSION
 
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 # Permanently activate virtualenv.
 ENV PATH="/venv/bin:$PATH"
 
@@ -19,6 +19,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
  && uv pip install \
       --python=/venv/bin/python \
       --only-binary=:all: \
+      --no-binary=pyyaml \
       --no-deps \
       --require-hashes \
       -r /app-src/requirements.txt \
@@ -32,8 +33,8 @@ FROM python:3.15.2-slim-bookworm AS final
 
 ARG UID="1000"
 ARG GID="1000"
-ENV PYTHONUNBUFFERED 1
-ENV HOME "/home/nonroot/"
+ENV PYTHONUNBUFFERED=1
+ENV HOME="/home/nonroot/"
 
 # Install git
 WORKDIR /wd
