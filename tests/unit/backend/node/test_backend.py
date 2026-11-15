@@ -17,15 +17,26 @@ class TestGetHighestMatchingVersion:
                 "20.10.0",
             ),
             (
+                "20",
+                "18.16.0\n20.10.0\t20.3.0\n19.0.0\n21.3.2\n",
+                "20.10.0",
+            ),
+            (
                 "21.0.0-alpha",
                 "21.0.0-alpha.1\n21.0.0-alpha.2\n21.0.0-beta.1\n",
                 "21.0.0-alpha.2",
+            ),
+            # Don't implicitly resolve to pre-release version.
+            (
+                None,
+                "18.16.0\n20.10.0\t20.3.0\n19.0.0\n21.0.0-alpha.1\n",
+                "20.10.0",
             ),
         ),
     )
     async def test_returns_highest_matching_version(
         self,
-        configured_version: str,
+        configured_version: str | None,
         output_data: str,
         expected_version: str,
     ) -> None:

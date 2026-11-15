@@ -89,7 +89,7 @@ def _parse_suffix_identifier(token: str) -> Identifier:
         return AlphaIdentifier(token)
 
 
-def _parse_suffix(subject: str) -> tuple[str, tuple[Identifier, ...]]:
+def parse_suffix(subject: str) -> tuple[str, tuple[Identifier, ...]]:
     match subject.split("-", maxsplit=2):
         case (main_version, suffix):
             return (
@@ -103,7 +103,7 @@ def _parse_suffix(subject: str) -> tuple[str, tuple[Identifier, ...]]:
 
 
 def parse_version(version_str: str) -> Version:
-    main_subject, suffix = _parse_suffix(version_str)
+    main_subject, suffix = parse_suffix(version_str)
 
     match tuple(int(part) for part in main_subject.split(".", maxsplit=4)):
         case (major, minor, patch):

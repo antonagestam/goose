@@ -30,6 +30,7 @@ from goose.process import stream_both
 from goose.process import stream_out
 from goose.process import system_python
 
+from ._version import parse_suffix
 from ._version import parse_version
 
 
@@ -130,13 +131,20 @@ async def _get_highest_matching_version(configured_version: str | None) -> str:
         raise RuntimeError(
             f"Failed listing available node versions {process.returncode=}"
         )
+    configured_pre_release = (
+        bool(parse_suffix(configured_version))
+        if configured_version is not None
+        else False
+    )
     available_versions = (
-        parse_version(version_string)
+        version
         for unclean_string in _versions_delimiter.split(
             output_buffer.getvalue().strip()
         )
         if (version_string := unclean_string.strip())
+        if (version := parse_version(version_string))
         if configured_version is None or version_string.startswith(configured_version)
+        if not version.suffix or configured_pre_release
     )
     try:
         version = max(available_versions)
