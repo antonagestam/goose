@@ -39,6 +39,34 @@ jobs:
           --requirement=requirements-test.txt
       - run: python3 -m pip check
 
+  goose-run:
+    env:
+      PYTHON_VERSION: "3.14"
+      COLUMNS: "120"
+      FORCE_COLOR: "1"
+      PYTHONUNBUFFERED: "1"
+      CACHE_VERSION: "1"
+    name: Run goose checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: 3.14
+          cache: pip
+          check-latest: true
+      - name: goose cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/goose
+          key: "${{ runner.os }}-goose-${{ env.CACHE_VERSION }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('.goose/**/manifest.json') }}"
+          restore-keys: |
+            ${{ runner.os }}-goose-${{ env.CACHE_VERSION }}-${{ env.PYTHON_VERSION }}
+            ${{ runner.os }}-goose-${{ env.CACHE_VERSION }}
+      - run: pip install --upgrade -e .
+      - run: goose run --select=all --delete-orphan-environments
+      - run: git diff
+
   self-check:
     name: Run hooks
     runs-on: ubuntu-latest
