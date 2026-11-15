@@ -50,19 +50,11 @@ jobs:
         cache: pip
         cache-dependency-path: .goose/**/manifest.json
         check-latest: true
-    - name: Environment cache
-      uses: actions/cache@v5
-      with:
-        path: ~/.cache/goose
-        key: ${{ runner.os }}-goose-3.15-${{ hashFiles('.goose/**/manifest.json') }}
-        restore-keys: |
-          ${{ runner.os }}-goose-3.15
-          ${{ runner.os }}-goose
     - run: python3 -m pip install --require-hashes --no-dependencies -r requirements.txt
     - run: python3 -m pip install --no-dependencies .
     # Note: this is important to discover when Dependabot is attempting to break things.
     - run: python3 -m pip check
-    - run: time python -X dev -m goose run --select=all --verbose --delete-orphan-environments
+    - run: time python -X dev -m goose run --select=all --verbose
 
   test:
     name: Test
