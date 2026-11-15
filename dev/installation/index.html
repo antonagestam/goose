@@ -536,7 +536,7 @@ in Github Actions.</p>
 <div class="codehilite"><pre><span></span><code><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CI</span>
 <span class="nt">on</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">push</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">branches</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;main&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">branches</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"main"</span><span class="p p-Indicator">]</span>
 <span class="w">  </span><span class="nt">pull_request</span><span class="p">:</span>
 <span class="nt">jobs</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">lint</span><span class="p">:</span>
@@ -559,7 +559,7 @@ Python release, you will need to manually manage upgrading Python this way.</p>
 <h3 id="as-docker-container">As Docker container<a class="headerlink" href="#as-docker-container" title="Permanent link">🔗</a></h3>
 <p>Goose also ships a Docker container that you can use. Mind that this currently somewhat
 limits the feature set.</p>
-<div class="codehilite"><pre><span></span><code><span class="nb">alias</span><span class="w"> </span><span class="nv">goose</span><span class="o">=</span><span class="s1">&#39;docker run --rm -it -v ${PWD}:/wd -v ~/.cache/goose-docker:/home/nonroot/.cache -e &quot;GOOSE_AUGMENTED_CWD=${PWD}&quot; ghcr.io/antonagestam/goose:latest&#39;</span>
+<div class="codehilite"><pre><span></span><code><span class="nb">alias</span><span class="w"> </span><span class="nv">goose</span><span class="o">=</span><span class="s1">'docker run --rm -it -v ${PWD}:/wd -v ~/.cache/goose-docker:/home/nonroot/.cache -e "GOOSE_AUGMENTED_CWD=${PWD}" ghcr.io/antonagestam/goose:latest'</span>
 </code></pre></div>
 
 
