@@ -1,4 +1,4 @@
-target-version = "py312"
+target-version = "py315"
 
 [lint]
 extend-select = [
@@ -45,6 +45,8 @@ extend-ignore = [
   "C420",
   # False positives, for example with Pydantic models. No dangerous consequences.
   "PLW1641",
+  # False positives.
+  "TRY004",
 ]
 
 [lint.isort]

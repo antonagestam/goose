@@ -184,7 +184,7 @@ async def _run_goose(
         asyncio.create_task(prepare_environment(environment, verbose=verbose))
         for environment in context.environments.values()
     ]
-    done, pending = await asyncio.wait(
+    done, _ = await asyncio.wait(
         prepare_tasks,
         return_when=asyncio.FIRST_EXCEPTION,
     )

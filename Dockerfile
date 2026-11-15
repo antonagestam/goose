@@ -1,4 +1,4 @@
-FROM ghcr.io/astral-sh/uv:python3.14-bookworm AS build
+FROM ghcr.io/astral-sh/uv:python3.15-trixie AS build
 
 ARG RELEASE_VERSION="dev"
 ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_GIT_GOOSE=$RELEASE_VERSION
@@ -28,7 +28,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
       /app-src \
  && uv pip check --python=/venv/bin/python
 
-FROM python:3.14.3-slim-bookworm AS final
+FROM python:3.15.2-slim-bookworm AS final
 
 ARG UID="1000"
 ARG GID="1000"
